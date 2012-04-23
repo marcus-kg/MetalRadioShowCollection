@@ -1,0 +1,5 @@
+- one file per show
+- filenemw without whitespace
+- filename lowercase
+- minimu information see 00_blank.txt 
+  - this infos on top of file

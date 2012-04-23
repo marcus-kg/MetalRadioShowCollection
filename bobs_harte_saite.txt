@@ -1,0 +1,11 @@
+status           good often recordet
+
+radio station    Radio Bob
+radio show       BoBs Harte Saite
+
+date             Mo 20:00..22:00
+timezone         utc+1
+
+url2record       http://85.239.108.31/mp3-radiobob.m3u
+hompage          http://radiobob.de
+

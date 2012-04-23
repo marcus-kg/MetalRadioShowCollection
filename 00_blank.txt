@@ -1,0 +1,10 @@
+status           god, often recordet | new, to be recordet soon
+
+radio station    
+radio show       
+
+date             
+timezone         utc+1
+
+url2record       http://
+hompage          http://
