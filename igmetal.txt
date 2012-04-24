@@ -1,0 +1,10 @@
+status           god, often recordet
+
+radio station    RadioR  # Ruesselsheim
+radio show       IgMetal
+
+date             Th. 20:00..22:00
+timezone         utc+1
+
+url2record       http://stream.mpango.de:8000
+hompage          http://www.radio-r.de/programme/ig-metal-rock--beyond/ig-metal.html
