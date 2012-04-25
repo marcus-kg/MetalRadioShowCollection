@@ -1,7 +1,7 @@
 status           new, to be recordet soon
 
-radio station    os radio
-radio show       Hard Radioshow
+radio station    OsRadio
+radio show       HardRadioshow
 
 date             Th 20:00 in odd weeks
 timezone         utc+1

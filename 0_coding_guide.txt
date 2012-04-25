@@ -1,6 +1,7 @@
 - one file per show
 - filename without whitespace
 - filename lowercase
+- Name of station an show must be valid directory names, no whitespace...
 - minimu information see 00_blank.txt
   - this infos on top of file
-# any other information in this files shall be a koment 
+# any other information in this files shall be a Comment 

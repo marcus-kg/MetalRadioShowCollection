@@ -1,7 +1,7 @@
 status           good often recordet
 
-radio station    Radio Bob
-radio show       BoBs Harte Saite
+radio station    RadioBob
+radio show       BoBsHarteSaite
 
 date             Mo 20:00..22:00
 timezone         utc+1
