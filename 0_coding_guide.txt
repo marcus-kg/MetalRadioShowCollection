@@ -1,5 +1,6 @@
 - one file per show
-- filenemw without whitespace
+- filename without whitespace
 - filename lowercase
-- minimu information see 00_blank.txt 
+- minimu information see 00_blank.txt
   - this infos on top of file
+# any other information in this files shall be a koment 

@@ -3,8 +3,11 @@ status           god, often recordet
 radio station    RadioZ
 radio show       zosh
 
-date             We 21:00..00:00
+date             We 21:00
 timezone         utc+1
+duration         3h
+crontabString    
 
+recording type   SingleFile
 url2record       http://www.distler-tontechnik.de/Radio-Z.m3u
 hompage          http://zosh.radio-z.net

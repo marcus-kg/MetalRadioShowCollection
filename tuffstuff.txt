@@ -3,8 +3,11 @@ status           god, often recordet
 radio station    Rockantenne
 radio show       TuffStuff
 
-date             Th. 22:00..24:00
+date             Th. 22:00
 timezone         utc+1
+duration         2h
+crontabString    
 
+recording type   PerTrac
 url2record       http://www.rockantenne.de/webradio/rockantenne.m3u
 hompage          http://www.rockantenne.de/tuff-stuff

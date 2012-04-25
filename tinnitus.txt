@@ -5,7 +5,10 @@ radio show       tinnitus
 
 date             Mo 21:00..23:00
 timezone         utc+1
+duration         2h
+crontabString    
 
+recording type   SingleFile
 url2record       http://netradio.ext.htwm.de:8000/live128.m3u
 hompage          http://tinnitus.kilu.de
 

@@ -5,6 +5,9 @@ radio show
 
 date             
 timezone         utc+1
+duration         
+crontabString    
 
+recording type   SingleFile | PerTrac
 url2record       http://
 hompage          http://
