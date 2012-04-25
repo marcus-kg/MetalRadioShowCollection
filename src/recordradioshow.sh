@@ -78,6 +78,7 @@ if [ "$5" = "p" ]; then # filePerTrackRecording
     rm -r $1/$2/$3/$DATE_STRING/incomplete/
 elif [ "$5" = "s" ]; then  # Singlefilerecording
     streamripper $6 -t -A -q -d $1/$2/$3/ -a $3-$DATE_STRING -l $4 -s
+    rm $1/$2/$3/*.cue
 else
     echo "unkown parameter 5: $5 "
     printparameters
