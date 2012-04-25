@@ -4,9 +4,9 @@ radio station    RadioBob
 radio show       BoBsHarteSaite
 
 date             Mo 20:00..22:00
-timezone         utc+1
+timezone         +1
 duration         2h
-crontabString    
+crontabString    2  20 * * MON
 
 recording type   PerTrac
 url2record       http://85.239.108.31/mp3-radiobob

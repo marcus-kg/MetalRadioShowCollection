@@ -1,5 +1,12 @@
+new idea
+The string to call the recordradio.sh scipt ist too long.
+i could write a script that takes the textfile as one argumet
+and the recording directory as an otherone because this does not belong to the file.
+
+
+old idea
 write a script that can read the txt files and creare a string to appaend at crontab
-with recalculation of radiostation Timezone and own timezone.
+with recalculation of radiostation timezone and own timezone.
 
 use it like this:
 <NAME_OF_SCRIPT> a_radioshow.txt 5 >> /etc/crontab
