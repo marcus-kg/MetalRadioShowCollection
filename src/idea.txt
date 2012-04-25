@@ -1,0 +1,5 @@
+write a script that can read the txt files and creare a string to appaend at crontab
+with recalculation of radiostation Timezone and own timezone.
+
+use it like this:
+<NAME_OF_SCRIPT> a_radioshow.txt 5 >> /etc/crontab

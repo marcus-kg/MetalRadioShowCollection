@@ -1,0 +1,13 @@
+status           god, often recordet | new, to be recordet soon
+
+radio station    RadioUnerhoertMarburg
+radio show       HoellenLaerm
+
+date             Every 2nd adn 4th Sunday
+timezone         utc+1
+duration         2h
+crontabString    
+
+recording type   SingleFile
+url2record       http://stream.radio-rum.de:8000/rum.mp3.m3u
+hompage          http://radio-rum.de/content
