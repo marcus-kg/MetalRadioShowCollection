@@ -1,8 +1,10 @@
 new idea
 The string to call the recordradio.sh scipt ist too long.
-i could write a script that takes the textfile as one argumet
-and the recording directory as an otherone because this does not belong to the file.
-
+- i could write a script that takes the textfile as one argumet
+  and the recording directory as an otherone because this does not belong to the file.
+- another script could handle the time zone recalculation of the crontabsring 
+metalrecorder.pl -f /home/marcus/src/MetalRadioShowCollection/tinnitus.txt -d /home/marcus/radioshows
+reCalcCronString.pl tinnitus.sh
 
 old idea
 write a script that can read the txt files and creare a string to appaend at crontab
