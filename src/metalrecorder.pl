@@ -4,13 +4,13 @@
 use Getopt::Std;
 
 my $version = "00.000";
-my $recordingType;
+my $RecordingType;
 my $url;
 my $station;
 my $show;
-my $duartion;
+my $duration;
 
-getopts('vhf:d:') or die "unknown option\n";
+getopts('vhtf:d:') or die "unknown option\n";
 
 $opt_v and die "version $version\n";
 $opt_h and usage();
@@ -20,8 +20,10 @@ $opt_d and print "recording into dir: |$opt_d|\n";
 
 $opt_f or die "need a file to red with -f <NAME_OF_FILE>\n";
 $opt_d or die "dont know where to write! give a dir with -d <RECORDING_ROOT_DIR>\n";
+if (!-d $opt_d){ die "directory >>$opt_d<< not found\n";}
 
-readTeaxtFile($opt_f);
+readTextFile($opt_f);
+
 record();
 
 # subs
@@ -31,45 +33,65 @@ sub record{
     local $DateString;
 
     $DateString = `date +%Y-%m-%d`;
-
-    if  ($recordingType eq "p"){
-	print "record filePertrac\n";
-    }elsif ($recordingType eq "s"){
-	print "record Singlefile\n";
+    
+    if  ($RecordingType eq "p"){
+	if ($opt_t){
+	    print "streamripper $url -t -q -d $opt_d/$station-$show/$DateString/ -l $duration -s \n";
+	}else{
+            mkdir("$opt_d/$station-$show"); 
+            if (!-d "$opt_d/$station-$show") { die "could not mkdir $opt_d/$station-$show\n"; }
+	    mkdir("$opt_d/$station-$show/$DateString");
+	    if (!-d "$opt_d/$station-$show/$DateString") { die "could not mkdir $opt_d/$station-$show/$DateString\n"; } 
+	    `streamripper $url -t -q -d $opt_d/$station-$show/$DateString/ -l $duration -s`;
+            `rm -r $opt_d/$station-$show/$DateString/incomplete/`;
+	}
+    }elsif ($RecordingType eq "s"){
+	if ($opt_t){
+	    print "streamripper $url -t -A -q -d $opt_d/$station-$show -a $show-$DateString/ -l $duration -s \n";
+	}else{
+	    mkdir("$opt_d/$station-$show");
+            if (!-d "$opt_d/$station-$show"){ die "could not mkdir $opt_d/$station-$show\n"; }
+            `streamripper $url -t -A -q -d $opt_d/$station-$show -a $show-$DateString/ -l $duration -s`;
+            `rm $opt_d/$station-$show/*.cue`;
+	}
     }else{
 	die "dont know how to record, Singelfile s or filePertrac p\n";
     }
 }
 
-sub readTeaxtFile{
+sub readTextFile{
     local $OneLine;
     open (FILE, $_[0]) or die die "can't open file >>$_[0]<<";
     while($OneLine = <FILE>){
 	#print "$OneLine";
-	$OneLine =~ m/radio station\s+([a-zA-Z0-9_]+)/i and $station = $1;
-	$OneLine =~ m/radio show\s+([a-zA-Z0-9_]+)/i    and $show = $1;
+	$OneLine =~ s/#.*//; # cutt comments from # to eol
+	$OneLine =~ m/radio\s*station\s+([a-zA-Z0-9_]+)/i   and $station = $1;
+	$OneLine =~ m/radio\s*show\s+([a-zA-Z0-9_]+)/i      and $show = $1;
 	$OneLine =~ m(url2record\s+([a-zA-Z0-9_:/\.\-]+))i  and $url = $1;
-	$OneLine =~ m/duration\s+([0-9]+)h/i   and $duartion = $1 * 3600;
-	$OneLine =~ m/duration\s+([0-9]+)m/i   and $duartion = $1 * 60;
-	$OneLine =~ m/duration\s+([0-9]+)min/i and $duartion = $1 * 60;
-	$OneLine =~ m/duration\s+([0-9]+)s/i   and $duartion = $1;
-	$OneLine =~ m/duration\s+([0-9]+)sec/i and $duartion = $1;
-	if ($OneLine =~ m/recording type/i){
-	    if ($OneLine =~ m/SingleFile/i) {
-		$recordingType = "s";
+	$OneLine =~ m/duration\s+([0-9]+)\s*h/i   and $duration = ($1 * 3600);
+	$OneLine =~ m/duration\s+([0-9]+)\s*m/i   and $duration = $1 * 60;
+	$OneLine =~ m/duration\s+([0-9]+)\s*min/i and $duration = $1 * 60;
+	$OneLine =~ m/duration\s+([0-9]+)\s*s/i   and $duration = $1;
+	$OneLine =~ m/duration\s+([0-9]+)\s*sec/i and $duration = $1;
+	if ($OneLine =~ m/recording\s*type/i){
+	    if ($OneLine =~ m/Single\s*File/i){
+		$RecordingType = "s";
 	    } else {
-		$recordingType = "p";
+		$RecordingType = "p";
 	    }
 	}
     }
-#    ($duration eq "") or die "no duration found in $_[0]\n";
+    if ("$duration" eq "" ) {         die "no duration found in $_[0]\n"; }
+    if ("$url" eq "" ) {              die "no url found in $_[0]\n";     }
+    if ("$show" eq "" ) {             die "no show found in $_[0]\n";     }
+    if ("$station" eq "" )       {    die "no station found in $_[0]\n";     }
+    if ("$RecordingType" eq "" ) {    die "no RecordingType found in $_[0]\n";     }
 
-    print "RecordingType       |$recordingType|\n";
+    print "RecordingType       |$RecordingType|\n";
     print "url                 |$url|\n";
     print "station             |$station|\n";
     print "show                |$show|\n";
-    print "duration            |$duartion|\n";
-
+    print "duration            |$duration|\n";
 }
 
 sub usage{
@@ -78,5 +100,7 @@ sub usage{
     print "other options:\n";
     print " -h : print this help\n";
     print " -v : print Version number\n";
+    print " -t : testrun, dont record just display errors\n";
     die;
 }
+
