@@ -1,0 +1,13 @@
+status           god, often recordet
+
+radio station    HR3
+radio show       LangeHarteNacht
+
+date             Jan,Apr,Jul,Oct Sa 2..8 0:00
+timezone         utc+1
+duration         4h
+crontabString    
+
+recording type   PerTrac
+url2record       http://gffstream.ic.llnwd.net/stream/gffstream_mp3_w69b
+hompage          http://hr3.de
