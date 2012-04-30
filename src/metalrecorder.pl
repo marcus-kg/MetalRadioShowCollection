@@ -3,7 +3,7 @@
 #use warnings;
 use Getopt::Std;
 
-my $version = "00.000";
+my $version = "00.001";
 my $RecordingType;
 my $url;
 my $station;
@@ -11,7 +11,7 @@ my $show;
 my $duration;
 my $DateString;
 
-getopts('vhtf:d:1:2:3:4:') or die "unknown option\n";
+getopts('rvhtf:d:1:2:3:4:') or die "unknown option\n";
 
 $opt_v and die "version $version\n";
 $opt_h and usage();
@@ -45,7 +45,7 @@ sub record{
 	    mkdir("$opt_d/$station-$show/$DateString");
 	    if (!-d "$opt_d/$station-$show/$DateString") { die "could not mkdir $opt_d/$station-$show/$DateString\n"; } 
 	    `streamripper $url -t -q -d $opt_d/$station-$show/$DateString/ -l $duration -s`;
-            `rm -r $opt_d/$station-$show/$DateString/incomplete/`;
+            if ($opt_r) {`rm -r $opt_d/$station-$show/$DateString/incomplete/`;}
 	}
     }elsif ($RecordingType eq "s"){
 	if ($opt_t){
@@ -54,7 +54,7 @@ sub record{
 	    mkdir("$opt_d/$station-$show");
             if (!-d "$opt_d/$station-$show"){ die "could not mkdir $opt_d/$station-$show\n"; }
             `streamripper $url -t -A -q -d $opt_d/$station-$show -a $show-$DateString/ -l $duration -s`;
-            `rm $opt_d/$station-$show/*.cue`;
+            if ($opt_r) {`rm $opt_d/$station-$show/*.cue`;}
 	}
     }else{
 	die "dont know how to record, Singelfile s or filePertrac p\n";
@@ -102,6 +102,7 @@ sub usage{
     print "other options:\n";
     print " -h     : print this help\n";
     print " -v     : print Version number\n";
+    print " -r     : remove(delete) *.cue-files and /incomplete/ directory\n";
     print " -t     : testrun, dont record or execute just display errors\n";
     print " -1..-5 : programs to execute when recording is finished\n";
     print "          use with: %dir, %url, %show, %station, %duration, %DateString\n";
