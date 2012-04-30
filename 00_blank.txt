@@ -1,13 +1,14 @@
-status           god, often recordet | new, to be recordet soon
+status           god, often recordet | new, to be recordet soon   # informative
 
-radio station    
-radio show       
+radio station       # neded to create dir name
+radio show          # neded to create dir name
 
-date             
-timezone         +1
-duration         
-crontabString    
+date                # informative
+timezone         +1 # needed  for crontab timezone  recalculation
+duration            # needed
+crontabString       # needed
+calendar week       # optional every week if empty
 
-recording type   SingleFile | PerTrac
-url2record       http://
-hompage          http://
+recording type   SingleFile | PerTrac  # needed
+url2record       http://               # needed
+hompage          http://               # informative
