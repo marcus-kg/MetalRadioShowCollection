@@ -9,8 +9,9 @@ my $url;
 my $station;
 my $show;
 my $duration;
+my $DateString;
 
-getopts('vhtf:d:1:2:3:4:5:6:7:8:9:') or die "unknown option\n";
+getopts('vhtf:d:1:2:3:4:') or die "unknown option\n";
 
 $opt_v and die "version $version\n";
 $opt_h and usage();
@@ -24,17 +25,18 @@ if (!-d $opt_d){ die "directory >>$opt_d<< not found\n";}
 
 readTextFile($opt_f);
 
+$DateString = `date +%Y-%m-%d`;
+chomp($DateString);
 record();
+
+execAfterRecording();
 
 # subs
 ################################
 
 sub record{
-    local $DateString;
-
-    $DateString = `date +%Y-%m-%d`;
-    
-    if  ($RecordingType eq "p"){
+     
+    if ($RecordingType eq "p"){
 	if ($opt_t){
 	    print "streamripper $url -t -q -d $opt_d/$station-$show/$DateString/ -l $duration -s \n";
 	}else{
@@ -100,8 +102,66 @@ sub usage{
     print "other options:\n";
     print " -h     : print this help\n";
     print " -v     : print Version number\n";
-    print " -t     : testrun, dont record just display errors\n";
-    print " -1..-9 : programs to execute after recording\n";
+    print " -t     : testrun, dont record or execute just display errors\n";
+    print " -1..-5 : programs to execute when recording is finished\n";
+    print "          use with: %dir, %url, %show, %station, %duration, %DateString\n";
     die;
 }
+
+sub substitute{
+    $_[0] =~ s/%url/$url/g;
+    $_[0] =~ s/%show/$show/g;
+    $_[0] =~ s/%station/$station/g;
+    $_[0] =~ s/%duration/$duration/g;
+    $_[0] =~ s/%DateString/$DateString/g;
+    
+    if ($RecordingType eq "p"){                      # record one file per trac
+        $_[0] =~ s/%dir/$opt_d\/$station\-$show\/$DateString\//g;
+    } else {                                         # record one large file
+        $_[0] =~ s/%dir/$opt_d\/$station\-$show\//g;
+    }
+    return $_[0];
+}
+
+sub execAfterRecording{
+    local $aString;
+    if ($opt_t){
+        if ($opt_1){ 
+            print "would execute |".substitute($opt_1)."|\n";
+            if ($opt_2){    
+                print "would execute |".substitute($opt_2)."|\n";
+                if ($opt_3){    
+                    print "would execute |".substitute($opt_3)."|\n";
+                     if ($opt_4){    
+                        print "would execute |".substitute($opt_4)."|\n";
+                         if ($opt_5){    
+                            print "would execute |".substitute($opt_5)."|\n";
+                         }
+                     }    
+                }
+            }
+        }
+    } else { # no testrun
+        if ($opt_1){
+            $aString = substitute($opt_1);
+            `$aString`;
+            if ($opt_2){    
+                $aString = substitute($opt_2);
+                `$aString`;
+                if ($opt_3){
+                    $aString = substitute($opt_3);
+                    `$aString`;
+                    if ($opt_4){    
+                        $aString = substitute($opt_4);
+                        `$aString`;
+                        if ($opt_5){    
+                            $aString = substitute($opt_5);
+                            `$aString`;
+                         }
+                     }
+                }
+            }
+        }
+    }
+} #endsub sub execAfterRecording
 
