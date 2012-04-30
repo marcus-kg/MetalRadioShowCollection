@@ -10,7 +10,7 @@ my $station;
 my $show;
 my $duration;
 
-getopts('vhtf:d:') or die "unknown option\n";
+getopts('vhtf:d:1:2:3:4:5:6:7:8:9:') or die "unknown option\n";
 
 $opt_v and die "version $version\n";
 $opt_h and usage();
@@ -98,9 +98,10 @@ sub usage{
     print "call : metalrecorder.pl -f <NAME_OF_COLLECTION_FILE>  -d <RADIO_SHOWS_ROOT_DIR>\n";
     print "typical usage is the call out of the /etc/crontab\n";
     print "other options:\n";
-    print " -h : print this help\n";
-    print " -v : print Version number\n";
-    print " -t : testrun, dont record just display errors\n";
+    print " -h     : print this help\n";
+    print " -v     : print Version number\n";
+    print " -t     : testrun, dont record just display errors\n";
+    print " -1..-9 : programs to execute after recording\n";
     die;
 }
 
