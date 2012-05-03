@@ -11,9 +11,9 @@ my $show;               # the name of the show is the secon part of the director
 my $duration;           # in seconds / how log the show should be recorded 
 my $DateString;         # YYYY-MM-DD also part of file- and directory name 
 
-getopts('rvhtf:d:1:2:3:4:5:') or die "unknown option\n";
-
 @ARGV or usage();       # missing any parameter
+
+getopts('rvhtf:d:1:2:3:4:5:') or die "unknown option\n";
 
 $opt_v and die "version $version\n";
 $opt_h and usage();
@@ -105,14 +105,13 @@ sub readTextFile{
             }
         }
     } # end of file reading
+
     # see if all necessary information is given
-    if ("$duration" eq "" )       { die "no duration found in $_[0]\n";      }
-    if ("$url" eq "" )            { die "no url found in $_[0]\n";           }
-    if ("$show" eq "" )           { die "no show found in $_[0]\n";          }
-    if ("$station" eq "" )        { die "no station found in $_[0]\n";       }
-    if ("$RecordingType" eq "" )  { die "no RecordingType found in $_[0]\n"; }
-    if ($show =~ /^[-\w\.]+$/)    { die "$show is no valid filename \n";     }
-    if ($station =~ /^[-\w\.]+$/) { die "$station is no valid filename \n";  }
+    if ( "$duration" eq "" )          { die "no duration found in $_[0]\n";      }
+    if ( "$url" eq "" )               { die "no url found in $_[0]\n";           }
+    if ( "$show" eq "" )              { die "no show found in $_[0]\n";          }
+    if ( "$station" eq "" )           { die "no station found in $_[0]\n";       }
+    if ( "$RecordingType" eq "" )     { die "no RecordingType found in $_[0]\n"; }
 
     # tell the user what i understood, or not
     print "RecordingType       |$RecordingType|\n";
