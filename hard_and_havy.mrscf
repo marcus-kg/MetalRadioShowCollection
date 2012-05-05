@@ -1,0 +1,13 @@
+status           new, to be recordet soon
+
+radio station    RockRadioDe
+radio show       HardAndHeavy
+
+date             Sa 22:00..24:00
+timezone         +1
+duration         2h
+crontabString    2  22 * * SAT
+
+recording type   PerTrac
+url2record       http://www.rockradio.de/rr_listen_128k_winamp.m3u
+hompage          http://rockradio.de
