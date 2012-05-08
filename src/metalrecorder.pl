@@ -10,22 +10,30 @@ my $station;            # the name of the radio station is used to creare a dire
 my $show;               # the name of the show is the secon part of the directoryname
 my $duration;           # in seconds / how log the show should be recorded 
 my $DateString;         # YYYY-MM-DD also part of recorded file- and directory name 
+my $configfile;         # Name of the configuration file to read
+my @toExec;             # the list of programs to be executed after recording is finished
+my $collectionDir;      # Directory of the collection files *.mrscf
 
 @ARGV or usage();       # missing any parameter
 
-getopts('rvhtf:d:1:2:3:4:5:') or die "unknown option\n";
+getopts('vhtf:c:') or die "unknown option\n";
 
 $opt_v and die "version $version\n";
 $opt_h and usage();
 
-$opt_f and print "collection file to read:  |$opt_f|\n";
-$opt_d and print "recording into dir:       |$opt_d|\n";
+if ($opt_c){
+    $configfile = $opt_c; 
+}else{
+    $configfile = "/etc/MetalRadioShowCollection.config";
+} 
+print "config file read:         |$configfile|\n";
 
-$opt_f or die "need a file to red with -f <NAME_OF_COLLECTIOB_FILE>\n";
-$opt_d or die "dont know where to write! give a dir with -d <RECORDING_ROOT_DIR>\n";
-if (!-d $opt_d){ die "directory >>$opt_d<< not found\n";}
+$opt_f or die "need a file to red with -f <NAME_OF_COLLECTION_FILE>\n";
 
-readCollectionFile($opt_f);
+readConfigFile($configfile, $opt_f);
+$opt_f and print "collection file to read:  |$collectionDir/$opt_f|\n";
+
+readCollectionFile("$collectionDir/$opt_f");
 
 $DateString = `date +%Y-%m-%d`; #YYYY-MM-DD
 chomp($DateString);
@@ -35,6 +43,44 @@ execAfterRecording();
 
 # subs
 ###############################################################################
+
+# FUNCTION
+#   read and interprete the config file
+#   and display errors
+# PARAMETERS
+#   Name of the config file
+# RETURNS
+#   nothing
+###############################################################################
+sub readConfigFile
+{   
+    my $cfgFileName;
+    my $collectionFileName;
+    my $ThisSectionIsForMe; # bool yes bevor the first section is known and if the current section matches the collectionFileName
+    
+    {$cfgFileName, $collectionFileName} = @_;
+    
+    $ThisSectionIsForMe = 1;
+    open (CFGFILE, $cfgFileName;) or die die "can't open config file >>$_[0]<<";
+    while($OneLine = <CFGFILE>){
+        #print "$OneLine";
+        $OneLine =~ s/\s*#.*//; # cut comments from >>#<< to eol
+        if ( $OneLine =~ m /\[$collectionFileName\]/ ){
+            $ThisSectionIsForMe = 1;
+        }elsif ( $OneLine =~ m /\[[\w\-\.]+\]/ ){
+            $ThisSectionIsForMe = 0;
+        }elsif ( $ThisSectionIsForMe ){
+            $OneLine =~ m/mrscfDirectory\s+([\w\-\.]+)/i and $collectionDir = $1;            
+            $OneLine =~ m/$garbageCollection\s+y/s; 
+            
+            $$collectionDir eq "" and die "No Directoy given to find the collection-File *. mrscf";
+            
+            print "collection dir:         |collectionDir|\n";
+        }
+  
+    }  # 
+    if (!-d $opt_d){ die "directory >>$opt_d<< not found\n";}
+} # end sub readConfigFile
 
 # FUNCTION
 #   do it! start streamripper and give it its information.
@@ -131,15 +177,14 @@ sub readCollectionFile{
 #   nothing
 ###############################################################################
 sub usage{
-    print "call : metalrecorder.pl -f <NAME_OF_COLLECTION_FILE>  -d <RADIO_SHOWS_ROOT_DIR>\n";
+    print "usage : metalrecorder.pl -f <NAME_OF_COLLECTION_FILE>\n"; 
     print "typical usage is the call out of the /etc/crontab\n";
     print "other options:\n";
-    print " -h     : print this help\n";
-    print " -t     : testrun, dont record or execute just display errors\n";
-    print " -v     : print Version number\n";
-    print " -r     : remove (delete) all *.cue-files | the incomplete subdir\n";
-    print " -1..-5 : programs to execute when recording is finished\n";
-    print "          use with: %dir, %file, %url, %show, %station, %duration, %DateString\n";
+    print "if -c option is not given >>/etc/MetalRadioShowCollection.config<< will be read\n";
+    print " -c <NAME> : altetnative config file >\n";
+    print " -h        : print this help\n";
+    print " -t        : testrun, dont record or execute just display errors\n";
+    print " -v        : print Version number and exit\n";
     die;
 }
 
@@ -181,42 +226,15 @@ sub substitute{
 ###############################################################################
 sub execAfterRecording{
     local $aString;
+    
     if ($opt_t){ # just print out to check substs
-        if ($opt_1){ 
-            print "would execute |".substitute($opt_1)."|\n";
-            if ($opt_2){    
-                print "would execute |".substitute($opt_2)."|\n";
-                if ($opt_3){    
-                    print "would execute |".substitute($opt_3)."|\n";
-                     if ($opt_4){    
-                        print "would execute |".substitute($opt_4)."|\n";
-                         if ($opt_5){    
-                            print "would execute |".substitute($opt_5)."|\n";
-                         }
-                     }    
-                }
-            }
+        foreach (@toExec){
+            print "would execute |".substitute($_)."|\n";
         }
     } else { # no testrun real execution
-        if ($opt_1){
-            $aString = substitute($opt_1);
+        foreach (@toExec){
+            $aString = substitute($_);
             `$aString`;
-            if ($opt_2){    
-                $aString = substitute($opt_2);
-                `$aString`;
-                if ($opt_3){
-                    $aString = substitute($opt_3);
-                    `$aString`;
-                    if ($opt_4){    
-                        $aString = substitute($opt_4);
-                        `$aString`;
-                        if ($opt_5){    
-                            $aString = substitute($opt_5);
-                            `$aString`;
-                         }
-                     }
-                }
-            }
         }
     }
 } #endsub sub execAfterRecording

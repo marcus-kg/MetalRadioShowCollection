@@ -1,7 +1,13 @@
+newer idea
+At least since it is possible to add strings for programs to excute, the call string in the /etc/crontab is too log again.
+solution: One config file in the /etc directory to set some pathes and programs to execute.
+Splited into sections the first section is global and could be overridden in mrscf-file.spcific sections below.
+
+
 new idea
 The string to call the recordradio.sh scipt ist too long.
 - i could write a script that takes the textfile as one argumet
-  and the recording directory as an otherone because this does not belong to the file.
+  and the recording directory as an otherone because this does not belong to the collection file.
 - another script could handle the time zone recalculation of the crontabsring 
 metalrecorder.pl -f /home/marcus/src/MetalRadioShowCollection/tinnitus.txt -d /home/marcus/radioshows
 reCalcCronString.pl tinnitus.sh
