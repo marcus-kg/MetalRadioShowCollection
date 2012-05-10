@@ -12,7 +12,9 @@ my $duration;           # in seconds / how log the show should be recorded
 my $DateString;         # YYYY-MM-DD also part of recorded file- and directory name 
 my $configfile;         # Name of the configuration file to read
 my @toExec;             # the list of programs to be executed after recording is finished
-my $collectionDir;      # Directory of the collection files *.mrscf
+my $mrscfDirectory;     # Directory of the collection files *.mrscf
+my $GarbageCollection;  # if set to yes in config file: in single file recording the *.cue files are deleted and in one file per trac recordings the inclomplete directory will be deleted 
+my $recordingDirectory; # the root dir of recording here in directorys will be created for every show
 
 @ARGV or usage();       # missing any parameter
 
@@ -26,14 +28,14 @@ if ($opt_c){
 }else{
     $configfile = "/etc/MetalRadioShowCollection.config";
 } 
-print "config file read:         |$configfile|\n";
+print "config file read:        |$configfile|\n";
 
-$opt_f or die "need a file to red with -f <NAME_OF_COLLECTION_FILE>\n";
+$opt_f or die "need a file to read with -f <NAME_OF_COLLECTION_FILE>\n";
 
 readConfigFile($configfile, $opt_f);
-$opt_f and print "collection file to read:  |$collectionDir/$opt_f|\n";
+$opt_f and print "collection file to read:  |$mrscfDirectory/$opt_f|\n";
 
-readCollectionFile("$collectionDir/$opt_f");
+readCollectionFile("$mrscfDirectory/$opt_f");
 
 $DateString = `date +%Y-%m-%d`; #YYYY-MM-DD
 chomp($DateString);
@@ -56,30 +58,48 @@ sub readConfigFile
 {   
     my $cfgFileName;
     my $collectionFileName;
-    my $ThisSectionIsForMe; # bool yes bevor the first section is known and if the current section matches the collectionFileName
+    my $ThisSectionIsForMe;         # bool yes bevor the first section is known and if the current section matches the collectionFileName
     
-    {$cfgFileName, $collectionFileName} = @_;
+    ($cfgFileName, $collectionFileName) = @_;
     
-    $ThisSectionIsForMe = 1;
-    open (CFGFILE, $cfgFileName;) or die die "can't open config file >>$_[0]<<";
+    $ThisSectionIsForMe = 1;        # when start reading the file the lines above the first section are globale settings
+    $GarbageCollection  = 0;        # do not delete to much
+    open (CFGFILE, $cfgFileName) or die die "can't open config file |$cfgFileName|";
     while($OneLine = <CFGFILE>){
+        $OneLine =~ s/\s*#.*//;     # cut comments from >>#<< to eol
         #print "$OneLine";
-        $OneLine =~ s/\s*#.*//; # cut comments from >>#<< to eol
-        if ( $OneLine =~ m /\[$collectionFileName\]/ ){
+        if ( $OneLine =~ m /\[$collectionFileName\]/ ){ # this is my [SECTION]
             $ThisSectionIsForMe = 1;
-        }elsif ( $OneLine =~ m /\[[\w\-\.]+\]/ ){
+        }elsif ( $OneLine =~ m /\[[\w\-\.]+\]/ ){       # found a [SECTION] but other than mine
             $ThisSectionIsForMe = 0;
-        }elsif ( $ThisSectionIsForMe ){
-            $OneLine =~ m/mrscfDirectory\s+([\w\-\.]+)/i and $collectionDir = $1;            
-            $OneLine =~ m/$garbageCollection\s+y/s; 
-            
-            $$collectionDir eq "" and die "No Directoy given to find the collection-File *. mrscf";
-            
-            print "collection dir:         |collectionDir|\n";
+        }elsif ( $ThisSectionIsForMe ){                 # other lines are only inresting if they are insiede my [SECTION]
+            # directories
+            $OneLine =~ m/mrscfDirectory\s+([\w-\.\/]+)/i     and $mrscfDirectory     = $1;            
+            $OneLine =~ m/recordingDirectory\s+([\w-\.\/]+)/i and $recordingDirectory = $1;
+            # GarbageCollection y[es] or n[o]
+            $OneLine =~ m/GarbageCollection\s+y/i and $GarbageCollection  = 1; 
+            $OneLine =~ m/GarbageCollection\s+n/i and $GarbageCollection  = 0;
+            # list of programs to execute after recording
+            $OneLine =~ m/execAfterRecording_([0-9]+)\s+([\w\-\.]+)/i and $toExec[$1] = $2;
         }
-  
-    }  # 
-    if (!-d $opt_d){ die "directory >>$opt_d<< not found\n";}
+    } # and while oneLine 
+    
+    # missing some obligatory information => write message and exit
+    #$$mrscfDirectory    eq "" and die "No directory given to find the collection-File *. mrscf: need a mrscfDirectory entry in $cfgFileName\n";
+    #$recordingDirectory eq "" and die "No directory given to store the music: need a recordingDirectory entry in $cfgFileName\n"; 
+            
+    # print waht i understood in the config file
+    print "ConfigFile:             |$cfgFileName|\n";
+    print "CollectionFile:         |$collectionFileName|\n";
+    print "mrscfDirectory:         |$mrscfDirectory|\n";
+    print "Recording into:         |$recordingDirectory|\n";
+    print "GarbageCollection       $GarbageCollection?yes:no\n";
+    
+    foreach (@toExec){
+        print "would execute |".substitute($_)."|\n";
+    }
+    
+    # if (!-d $opt_d){ die "directory >>$opt_d<< not found\n";}
 } # end sub readConfigFile
 
 # FUNCTION
@@ -112,7 +132,7 @@ sub record{
         }else{ # no testrun => do it
             mkdir("$opt_d/$station-$show");
             if (!-d "$opt_d/$station-$show"){ die "could not mkdir $opt_d/$station-$show\n"; }
-            `streamripper $url -t -A -q -d $opt_d/$station-$show -a $show-$DateString/ -l $duration -s`;
+            `streamripper $url -t -A -q -d $opt_d/$station-$show -a $show-$DateString -l $duration -s`;
             if ($opt_r){
                 `rm $opt_d/$station-$show/*.cue`;
             }
