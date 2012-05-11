@@ -1,7 +1,7 @@
 status           god, often recordet
 
 radio station    RadioZ
-radio show       zosh
+radio show       Zosh
 
 date             We 21:00
 timezone         +1

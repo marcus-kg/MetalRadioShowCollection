@@ -65,7 +65,7 @@ sub record{
         }else{ # no testrun => do it
             mkdir("$opt_d/$station-$show");
             if (!-d "$opt_d/$station-$show"){ die "could not mkdir $opt_d/$station-$show\n"; }
-            `streamripper $url -t -A -q -d $opt_d/$station-$show -a $show-$DateString/ -l $duration -s`;
+            `streamripper $url -t -A -q -d $opt_d/$station-$show -a $show-$DateString -l $duration -s`;
             if ($opt_r){
                 `rm $opt_d/$station-$show/*.cue`;
             }

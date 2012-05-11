@@ -8,6 +8,6 @@ timezone         +1
 duration         1h
 crontabString    2 20 * * THU
 
-recording type   PerTrac
+recording type   SingleFile
 url2record       http://server1.webradiostreaming.de:2814/listen.pls
 hompage          http://www.osradio.de
