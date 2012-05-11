@@ -27,8 +27,7 @@ if ($opt_c){
     $configfile = $opt_c; 
 }else{
     $configfile = "/etc/MetalRadioShowCollection.config";
-} 
-print "config file read:        |$configfile|\n";
+}
 
 $opt_f or die "need a file to read with -f <NAME_OF_COLLECTION_FILE>\n";
 
@@ -39,6 +38,7 @@ readCollectionFile("$mrscfDirectory/$opt_f");
 
 $DateString = `date +%Y-%m-%d`; #YYYY-MM-DD
 chomp($DateString);
+
 record();
 
 execAfterRecording();
@@ -83,23 +83,22 @@ sub readConfigFile
             $OneLine =~ m/execAfterRecording_([0-9]+)\s+([\w\-\.]+)/i and $toExec[$1] = $2;
         }
     } # and while oneLine 
-    
+
     # missing some obligatory information => write message and exit
     #$$mrscfDirectory    eq "" and die "No directory given to find the collection-File *. mrscf: need a mrscfDirectory entry in $cfgFileName\n";
     #$recordingDirectory eq "" and die "No directory given to store the music: need a recordingDirectory entry in $cfgFileName\n"; 
-            
+
     # print waht i understood in the config file
     print "ConfigFile:             |$cfgFileName|\n";
     print "CollectionFile:         |$collectionFileName|\n";
     print "mrscfDirectory:         |$mrscfDirectory|\n";
     print "Recording into:         |$recordingDirectory|\n";
-    print "GarbageCollection       $GarbageCollection?yes:no\n";
-    
+    print "GarbageCollection       ";  if ($GarbageCollection) {print "yes\n";} else {print "no\n";}
+
     foreach (@toExec){
         print "would execute |".substitute($_)."|\n";
     }
-    
-    # if (!-d $opt_d){ die "directory >>$opt_d<< not found\n";}
+
 } # end sub readConfigFile
 
 # FUNCTION
@@ -112,29 +111,30 @@ sub readConfigFile
 #   nothing
 ###############################################################################
 sub record{
+
     if ($RecordingType eq "p"){
         if ($opt_t){
-            print "streamripper $url -t -q -d $opt_d/$station-$show/$DateString/ -l $duration -s \n";
+            print "streamripper $url -t -q -d $recordingDirectory/$station-$show/$DateString/ -l $duration -s \n";
         }else{ # no testrun => do it
-            mkdir("$opt_d/$station-$show"); 
-            if (!-d "$opt_d/$station-$show") { die "could not mkdir $opt_d/$station-$show\n"; }
+            mkdir("$recordingDirectory/$station-$show"); 
+            if (!-d "$recordingDirectory/$station-$show") { die "could not mkdir $recordingDirectory/$station-$show\n"; }
 
             mkdir("$opt_d/$station-$show/$DateString");
-            if (!-d "$opt_d/$station-$show/$DateString") { die "could not mkdir $opt_d/$station-$show/$DateString\n"; } 
-            `streamripper $url -t -q -d $opt_d/$station-$show/$DateString/ -l $duration -s`;
-            if ($opt_r){
-                `rm -r $opt_d/$station-$show/$DateString/incomplete/`;
+            if (!-d "$recordingDirectory/$station-$show/$DateString") { die "could not mkdir $recordingDirectory/$station-$show/$DateString\n"; } 
+            `streamripper $url -t -q -d $recordingDirectory/$station-$show/$DateString/ -l $duration -s`;
+            if ($GarbageCollection){
+                `rm -r $recordingDirectory/$station-$show/$DateString/incomplete/`;
             }
         }
     }elsif ($RecordingType eq "s"){
         if ($opt_t){
-            print "streamripper $url -t -A -q -d $opt_d/$station-$show -a $show-$DateString/ -l $duration -s \n";
+            print "streamripper $url -t -A -q -d $recordingDirectory/$station-$show -a $show-$DateString/ -l $duration -s \n";
         }else{ # no testrun => do it
-            mkdir("$opt_d/$station-$show");
-            if (!-d "$opt_d/$station-$show"){ die "could not mkdir $opt_d/$station-$show\n"; }
-            `streamripper $url -t -A -q -d $opt_d/$station-$show -a $show-$DateString -l $duration -s`;
-            if ($opt_r){
-                `rm $opt_d/$station-$show/*.cue`;
+            mkdir("$recordingDirectory/$station-$show");
+            if (!-d "$recordingDirectory/$station-$show"){ die "could not mkdir $recordingDirectory/$station-$show\n"; }
+            `streamripper $url -t -A -q -d $recordingDirectory/$station-$show -a $show-$DateString -l $duration -s`;
+            if ($GarbageCollection){
+                `rm $recordingDirectory/$station-$show/*.cue`;
             }
         }
     }else{ # not p nor s => what?
@@ -225,10 +225,10 @@ sub substitute{
     $_[0] =~ s/%DateString/$DateString/g;
     
     if ($RecordingType eq "p"){                      # record one file per trac
-        $_[0] =~ s/%dir/$opt_d\/$station\-$show\/$DateString\//g;
+        $_[0] =~ s/%dir/$recordingDirectory\/$station\-$show\/$DateString\//g;
         $_[0] =~ s/%file/$show\-$DateString/g;
     } else {                                         # record one large file
-        $_[0] =~ s/%dir/$opt_d\/$station\-$show\//g;
+        $_[0] =~ s/%dir/$recordingDirectory\/$station\-$show\//g;
         $_[0] =~ s/%file/DifferentNamesForEachFile/g;
     }
     return $_[0];
