@@ -32,7 +32,6 @@ if ($opt_c){
 $opt_f or die "need a file to read with -f <NAME_OF_COLLECTION_FILE>\n";
 
 readConfigFile($configfile, $opt_f);
-$opt_f and print "collection file to read:  |$mrscfDirectory/$opt_f|\n";
 
 readCollectionFile("$mrscfDirectory/$opt_f");
 
@@ -80,25 +79,20 @@ sub readConfigFile
             $OneLine =~ m/GarbageCollection\s+y/i and $GarbageCollection  = 1; 
             $OneLine =~ m/GarbageCollection\s+n/i and $GarbageCollection  = 0;
             # list of programs to execute after recording
-            $OneLine =~ m/execAfterRecording_([0-9]+)\s+([\w\-\.]+)/i and $toExec[$1] = $2;
+            $OneLine =~ m/execAfterRecording_([0-9]+)\s+(.+$)/i and $toExec[$1] = $2;
         }
     } # and while oneLine 
 
     # missing some obligatory information => write message and exit
-    #$$mrscfDirectory    eq "" and die "No directory given to find the collection-File *. mrscf: need a mrscfDirectory entry in $cfgFileName\n";
+    #$mrscfDirectory     eq "" and die "No directory given to find the collection-File *. mrscf: need a mrscfDirectory entry in $cfgFileName\n";
     #$recordingDirectory eq "" and die "No directory given to store the music: need a recordingDirectory entry in $cfgFileName\n"; 
 
     # print waht i understood in the config file
-    print "ConfigFile:             |$cfgFileName|\n";
-    print "CollectionFile:         |$collectionFileName|\n";
-    print "mrscfDirectory:         |$mrscfDirectory|\n";
-    print "Recording into:         |$recordingDirectory|\n";
-    print "GarbageCollection       ";  if ($GarbageCollection) {print "yes\n";} else {print "no\n";}
-
-    foreach (@toExec){
-        print "would execute |".substitute($_)."|\n";
-    }
-
+    print "ConfigFile:               |$cfgFileName|\n";
+    print "CollectionFile:           |$collectionFileName|\n";
+    print "mrscfDirectory:           |$mrscfDirectory|\n";
+    print "Recording into:           |$recordingDirectory|\n";
+    print "GarbageCollection         "; ($GarbageCollection)? print "yes\n": print "no\n";
 } # end sub readConfigFile
 
 # FUNCTION
@@ -111,7 +105,6 @@ sub readConfigFile
 #   nothing
 ###############################################################################
 sub record{
-
     if ($RecordingType eq "p"){
         if ($opt_t){
             print "streamripper $url -t -q -d $recordingDirectory/$station-$show/$DateString/ -l $duration -s \n";
@@ -185,7 +178,7 @@ sub readCollectionFile{
     print "url                       |$url|\n";
     print "station                   |$station|\n";
     print "show                      |$show|\n";
-    print "duration                  |$duration|\n";
+    print "duration / s              |$duration|\n";
 } # end sub readCollectionFile
 
 # FUNCTION
@@ -206,7 +199,7 @@ sub usage{
     print " -t        : testrun, dont record or execute just display errors\n";
     print " -v        : print Version number and exit\n";
     die;
-}
+} # sub usage{
 
 # FUNCTION
 #   by given parameter -1..-5 the program to be executed after the recording is finished
@@ -218,12 +211,11 @@ sub usage{
 #   the same string with the substitutions
 ###################################################################################################
 sub substitute{
-    $_[0] =~ s/%url/$url/g;
-    $_[0] =~ s/%show/$show/g;
-    $_[0] =~ s/%station/$station/g;
-    $_[0] =~ s/%duration/$duration/g;
-    $_[0] =~ s/%DateString/$DateString/g;
-    
+    $_[0] =~ s/\%url/$url/g;
+    $_[0] =~ s/\%show/$show/g;
+    $_[0] =~ s/\%station/$station/g;
+    $_[0] =~ s/\%duration/$duration/g;
+    $_[0] =~ s/\%DateString/$DateString/g;
     if ($RecordingType eq "p"){                      # record one file per trac
         $_[0] =~ s/%dir/$recordingDirectory\/$station\-$show\/$DateString\//g;
         $_[0] =~ s/%file/$show\-$DateString/g;
@@ -232,7 +224,7 @@ sub substitute{
         $_[0] =~ s/%file/DifferentNamesForEachFile/g;
     }
     return $_[0];
-}
+} # end sub substitute{
 
 # FUNCTION
 #   This function executes the programs given at the command line options
@@ -249,7 +241,7 @@ sub execAfterRecording{
     
     if ($opt_t){ # just print out to check substs
         foreach (@toExec){
-            print "would execute |".substitute($_)."|\n";
+            print "execute  |".substitute($_)."|\n";
         }
     } else { # no testrun real execution
         foreach (@toExec){
