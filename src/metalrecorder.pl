@@ -112,7 +112,7 @@ sub record{
             mkdir("$recordingDirectory/$station-$show"); 
             if (!-d "$recordingDirectory/$station-$show") { die "could not mkdir $recordingDirectory/$station-$show\n"; }
 
-            mkdir("$opt_d/$station-$show/$DateString");
+            mkdir("$recordingDirectory/$station-$show/$DateString");
             if (!-d "$recordingDirectory/$station-$show/$DateString") { die "could not mkdir $recordingDirectory/$station-$show/$DateString\n"; } 
             `streamripper $url -t -q -d $recordingDirectory/$station-$show/$DateString/ -l $duration -s`;
             if ($GarbageCollection){
