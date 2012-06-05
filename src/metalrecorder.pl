@@ -7,7 +7,7 @@ my $version = "00.001"; # will be counted up anytime
 my $RecordingType;      # p => one file Per trac | s => one Single File
 my $url;                # URL of the audiostream to record
 my $station;            # the name of the radio station is used to creare a directoryname 
-my $show;               # the name of the show is the secon part of the directoryname
+my $show;               # the name of the show is the second part of the directoryname
 my $duration;           # in seconds / how log the show should be recorded 
 my $DateString;         # YYYY-MM-DD also part of recorded file- and directory name 
 my $configfile;         # Name of the configuration file to read
@@ -105,10 +105,10 @@ sub readConfigFile
 #   nothing
 ###############################################################################
 sub record{
-    if ($RecordingType eq "p"){
-        if ($opt_t){
+    if ($RecordingType eq "p"){ # one file per trac
+        if ($opt_t){            # testrun
             print "streamripper $url -t -q -d $recordingDirectory/$station-$show/$DateString/ -l $duration -s \n";
-        }else{ # no testrun => do it
+        }else{                  # no testrun => do it
             mkdir("$recordingDirectory/$station-$show"); 
             if (!-d "$recordingDirectory/$station-$show") { die "could not mkdir $recordingDirectory/$station-$show\n"; }
 
@@ -119,10 +119,10 @@ sub record{
                 `rm -r $recordingDirectory/$station-$show/$DateString/incomplete/`;
             }
         }
-    }elsif ($RecordingType eq "s"){
-        if ($opt_t){
+    }elsif ($RecordingType eq "s"){ # record into one single file
+        if ($opt_t){                # testrun 
             print "streamripper $url -t -A -q -d $recordingDirectory/$station-$show -a $show-$DateString/ -l $duration -s \n";
-        }else{ # no testrun => do it
+        }else{                      # no testrun => do it
             mkdir("$recordingDirectory/$station-$show");
             if (!-d "$recordingDirectory/$station-$show"){ die "could not mkdir $recordingDirectory/$station-$show\n"; }
             `streamripper $url -t -A -q -d $recordingDirectory/$station-$show -a $show-$DateString -l $duration -s`;
@@ -202,11 +202,10 @@ sub usage{
 } # sub usage{
 
 # FUNCTION
-#   by given parameter -1..-5 the program to be executed after the recording is finished
-#   could receive information in special %... macros
-#   this funtion substiutes the %... macro with correct string
+#   This function substituts the %... macros given in the config file with the 
+#   >>execAfterRecording_[0-9]<< key
 # PARAMETERS 
-#   the string behind the -1 .. -5 option 
+#   the string behind the >>execAfterRecording_[0-9]<< key 
 # RETURNS
 #   the same string with the substitutions
 ###################################################################################################
@@ -227,8 +226,8 @@ sub substitute{
 } # end sub substitute{
 
 # FUNCTION
-#   This function executes the programs given at the command line options
-#   -1 .. -5 inclusive the given parameters and its substitutions %...
+#   This function executes the programs given in the config file with the 
+#   >>execAfterRecording_[0-9]<< key
 #   if testrun parameter -t is given nothing will be executed, it will just be 
 #   printed out to see if the substitions works as expected.
 # PARAMETERS
@@ -239,11 +238,11 @@ sub substitute{
 sub execAfterRecording{
     local $aString;
     
-    if ($opt_t){ # just print out to check substs
+    if ($opt_t){    # just print out to check substs
         foreach (@toExec){
             print "execute  |".substitute($_)."|\n";
         }
-    } else { # no testrun real execution
+    } else {        # no testrun real execution
         foreach (@toExec){
             $aString = substitute($_);
             `$aString`;
