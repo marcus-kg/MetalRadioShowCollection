@@ -15,6 +15,7 @@ my @toExec;             # the list of programs to be executed after recording is
 my $mrscfDirectory;     # Directory of the collection files *.mrscf
 my $GarbageCollection;  # if set to yes in config file: in single file recording the *.cue files are deleted and in one file per trac recordings the inclomplete directory will be deleted 
 my $recordingDirectory; # the root dir of recording here in directorys will be created for every show
+my $additionalParameter;# appendet to Streamripper
 
 @ARGV or usage();       # missing any parameter
 
@@ -80,6 +81,8 @@ sub readConfigFile
             $OneLine =~ m/GarbageCollection\s+n/i and $GarbageCollection  = 0;
             # list of programs to execute after recording
             $OneLine =~ m/execAfterRecording_([0-9]+)\s+(.+$)/i and $toExec[$1] = $2;
+            # additional parameters to Streamripper
+            $OneLine =~ m/additionalParameter\s+(.+)/i and $additionalParameter = $1;
         }
     } # and while oneLine 
 
@@ -92,7 +95,8 @@ sub readConfigFile
     print "CollectionFile:           |$collectionFileName|\n";
     print "mrscfDirectory:           |$mrscfDirectory|\n";
     print "Recording into:           |$recordingDirectory|\n";
-    print "GarbageCollection         "; ($GarbageCollection)? print "yes\n": print "no\n";
+    print "GarbageCollection:        "; ($GarbageCollection)? print "yes\n": print "no\n";
+    print "additionalParameter:      |$additionalParameter|\n";    
 } # end sub readConfigFile
 
 # FUNCTION
@@ -107,25 +111,25 @@ sub readConfigFile
 sub record{
     if ($RecordingType eq "p"){ # one file per trac
         if ($opt_t){            # testrun
-            print "streamripper $url -t -q -d $recordingDirectory/$station-$show/$DateString/ -l $duration -s \n";
+            print "streamripper $url -t -q -d $recordingDirectory/$station-$show/$DateString/ -l $duration -s $additionalParameter\n";
         }else{                  # no testrun => do it
             mkdir("$recordingDirectory/$station-$show"); 
             if (!-d "$recordingDirectory/$station-$show") { die "could not mkdir $recordingDirectory/$station-$show\n"; }
 
             mkdir("$recordingDirectory/$station-$show/$DateString");
             if (!-d "$recordingDirectory/$station-$show/$DateString") { die "could not mkdir $recordingDirectory/$station-$show/$DateString\n"; } 
-            `streamripper $url -t -q -d $recordingDirectory/$station-$show/$DateString/ -l $duration -s`;
+            `streamripper $url -t -q -d $recordingDirectory/$station-$show/$DateString/ -l $duration -s $additionalParameter`;
             if ($GarbageCollection){
                 `rm -r $recordingDirectory/$station-$show/$DateString/incomplete/`;
             }
         }
     }elsif ($RecordingType eq "s"){ # record into one single file
         if ($opt_t){                # testrun 
-            print "streamripper $url -t -A -q -d $recordingDirectory/$station-$show -a $show-$DateString/ -l $duration -s \n";
+            print "streamripper $url -t -A -q -d $recordingDirectory/$station-$show -a $show-$DateString/ -l $duration -s $additionalParameter\n";
         }else{                      # no testrun => do it
             mkdir("$recordingDirectory/$station-$show");
             if (!-d "$recordingDirectory/$station-$show"){ die "could not mkdir $recordingDirectory/$station-$show\n"; }
-            `streamripper $url -t -A -q -d $recordingDirectory/$station-$show -a $show-$DateString -l $duration -s`;
+            `streamripper $url -t -A -q -d $recordingDirectory/$station-$show -a $show-$DateString -l $duration -s $additionalParameter`;
             if ($GarbageCollection){
                 `rm $recordingDirectory/$station-$show/*.cue`;
             }
