@@ -5,6 +5,7 @@ radio show       HardRadioshow
 
 date             Th 20:00 in odd weeks
 timezone         +1
+weeks2record     odd
 duration         1h
 crontabString    2 20 * * THU
 

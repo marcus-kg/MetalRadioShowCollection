@@ -33,15 +33,15 @@ if ($opt_c){
 $opt_f or die "need a file to read with -f <NAME_OF_COLLECTION_FILE>\n";
 
 readConfigFile($configfile, $opt_f);
-
 readCollectionFile("$mrscfDirectory/$opt_f");
 
 $DateString = `date +%Y-%m-%d`; #YYYY-MM-DD
 chomp($DateString);
 
-record();
-
-execAfterRecording();
+if (recordThisWeek()){
+    record();
+    execAfterRecording();
+}
 
 # subs
 ###############################################################################
@@ -156,7 +156,8 @@ sub readCollectionFile{
         $OneLine =~ m/radio\s*station\s+([a-zA-Z0-9_]+)/i   and $station = $1;
         $OneLine =~ m/radio\s*show\s+([a-zA-Z0-9_]+)/i      and $show = $1;
         $OneLine =~ m(url2record\s+([a-zA-Z0-9_:/\.\-]+))i  and $url = $1;
-        $OneLine =~ m/duration\s+([0-9]+)\s*h/i   and $duration = ($1 * 3600);
+        $OneLine =~ m/weeks2record\s+(.+)/i       and $weeks2record = $1;
+        $OneLine =~ m/duration\s+([0-9]+)\s*h/i   and $duration = $1 * 3600;
         $OneLine =~ m/duration\s+([0-9]+)\s*m/i   and $duration = $1 * 60;
         $OneLine =~ m/duration\s+([0-9]+)\s*min/i and $duration = $1 * 60;
         $OneLine =~ m/duration\s+([0-9]+)\s*s/i   and $duration = $1;
@@ -183,6 +184,11 @@ sub readCollectionFile{
     print "station                   |$station|\n";
     print "show                      |$show|\n";
     print "duration / s              |$duration|\n";
+    if ($weeks2record eq ""){
+        print "weeks2record              EVERY\n";
+    }else{
+        print "weeks2record              |$weeks2record|\n";
+    }
 } # end sub readCollectionFile
 
 # FUNCTION
@@ -253,4 +259,22 @@ sub execAfterRecording{
         }
     }
 } #endsub sub execAfterRecording
+
+# FUNCTION
+#   if ths week should be recordet this function returns true
+# PARAMETERS
+#   non
+# RETURNS
+#   true if this is on of the matching weeks
+###############################################################################
+sub recordThisWeek{
+    local $ThisWeek = `date +%W`;
+    chomp($ThisWeek);
+
+    if ($weeks2record eq "") { return 1; } # if no weeks2rekord are given, every week is right
+    if ((uc($weeks2record) eq "ODD")  and (($ThisWeek % 2) == 1)) { return 1; }
+    if ((uc($weeks2record) eq "EVEN") and (($ThisWeek % 2) == 0)) { return 1; }
+    foreach(split(/,/, $weeks2record)){  if ($_ == $ThisWeek)     { return 1; }  }
+    return 0;
+}
 
