@@ -7,7 +7,7 @@ date                # informative
 timezone         +1 # needed for crontab timezone recalculation
 duration            # needed
 crontabString       # needed for crontab timezone recalculation
-calendar week       # optional, every week if empty
+weeks2record     1,2,3... | even | odd # optional, Every week if empty. This is a komma separted list of week numbers, odd or even
 
 recording type   SingleFile | PerTrac  # needed
 url2record       http://               # needed

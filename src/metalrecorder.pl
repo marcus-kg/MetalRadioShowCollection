@@ -7,7 +7,7 @@ my $version = "00.001"; # will be counted up anytime
 my $RecordingType;      # p => one file Per trac | s => one Single File
 my $url;                # URL of the audiostream to record
 my $station;            # the name of the radio station is used to creare a directoryname 
-my $show;               # the name of the show is the secon part of the directoryname
+my $show;               # the name of the show is the second part of the directoryname
 my $duration;           # in seconds / how log the show should be recorded 
 my $DateString;         # YYYY-MM-DD also part of recorded file- and directory name 
 my $configfile;         # Name of the configuration file to read
@@ -15,6 +15,7 @@ my @toExec;             # the list of programs to be executed after recording is
 my $mrscfDirectory;     # Directory of the collection files *.mrscf
 my $GarbageCollection;  # if set to yes in config file: in single file recording the *.cue files are deleted and in one file per trac recordings the inclomplete directory will be deleted 
 my $recordingDirectory; # the root dir of recording here in directorys will be created for every show
+my $additionalParameter;# appendet to Streamripper
 
 @ARGV or usage();       # missing any parameter
 
@@ -32,15 +33,15 @@ if ($opt_c){
 $opt_f or die "need a file to read with -f <NAME_OF_COLLECTION_FILE>\n";
 
 readConfigFile($configfile, $opt_f);
-
 readCollectionFile("$mrscfDirectory/$opt_f");
 
 $DateString = `date +%Y-%m-%d`; #YYYY-MM-DD
 chomp($DateString);
 
-record();
-
-execAfterRecording();
+if (recordThisWeek()){
+    record();
+    execAfterRecording();
+}
 
 # subs
 ###############################################################################
@@ -80,6 +81,8 @@ sub readConfigFile
             $OneLine =~ m/GarbageCollection\s+n/i and $GarbageCollection  = 0;
             # list of programs to execute after recording
             $OneLine =~ m/execAfterRecording_([0-9]+)\s+(.+$)/i and $toExec[$1] = $2;
+            # additional parameters to Streamripper
+            $OneLine =~ m/additionalParameter\s+(.+)/i and $additionalParameter = $1;
         }
     } # and while oneLine 
 
@@ -92,7 +95,8 @@ sub readConfigFile
     print "CollectionFile:           |$collectionFileName|\n";
     print "mrscfDirectory:           |$mrscfDirectory|\n";
     print "Recording into:           |$recordingDirectory|\n";
-    print "GarbageCollection         "; ($GarbageCollection)? print "yes\n": print "no\n";
+    print "GarbageCollection:        "; ($GarbageCollection)? print "yes\n": print "no\n";
+    print "additionalParameter:      |$additionalParameter|\n";    
 } # end sub readConfigFile
 
 # FUNCTION
@@ -105,27 +109,27 @@ sub readConfigFile
 #   nothing
 ###############################################################################
 sub record{
-    if ($RecordingType eq "p"){
-        if ($opt_t){
-            print "streamripper $url -t -q -d $recordingDirectory/$station-$show/$DateString/ -l $duration -s \n";
-        }else{ # no testrun => do it
+    if ($RecordingType eq "p"){ # one file per trac
+        if ($opt_t){            # testrun
+            print "streamripper $url -t -q -d $recordingDirectory/$station-$show/$DateString/ -l $duration -s $additionalParameter\n";
+        }else{                  # no testrun => do it
             mkdir("$recordingDirectory/$station-$show"); 
             if (!-d "$recordingDirectory/$station-$show") { die "could not mkdir $recordingDirectory/$station-$show\n"; }
 
             mkdir("$recordingDirectory/$station-$show/$DateString");
             if (!-d "$recordingDirectory/$station-$show/$DateString") { die "could not mkdir $recordingDirectory/$station-$show/$DateString\n"; } 
-            `streamripper $url -t -q -d $recordingDirectory/$station-$show/$DateString/ -l $duration -s`;
+            `streamripper $url -t -q -d $recordingDirectory/$station-$show/$DateString/ -l $duration -s $additionalParameter`;
             if ($GarbageCollection){
                 `rm -r $recordingDirectory/$station-$show/$DateString/incomplete/`;
             }
         }
-    }elsif ($RecordingType eq "s"){
-        if ($opt_t){
-            print "streamripper $url -t -A -q -d $recordingDirectory/$station-$show -a $show-$DateString/ -l $duration -s \n";
-        }else{ # no testrun => do it
+    }elsif ($RecordingType eq "s"){ # record into one single file
+        if ($opt_t){                # testrun 
+            print "streamripper $url -t -A -q -d $recordingDirectory/$station-$show -a $show-$DateString/ -l $duration -s $additionalParameter\n";
+        }else{                      # no testrun => do it
             mkdir("$recordingDirectory/$station-$show");
             if (!-d "$recordingDirectory/$station-$show"){ die "could not mkdir $recordingDirectory/$station-$show\n"; }
-            `streamripper $url -t -A -q -d $recordingDirectory/$station-$show -a $show-$DateString -l $duration -s`;
+            `streamripper $url -t -A -q -d $recordingDirectory/$station-$show -a $show-$DateString -l $duration -s $additionalParameter`;
             if ($GarbageCollection){
                 `rm $recordingDirectory/$station-$show/*.cue`;
             }
@@ -152,7 +156,8 @@ sub readCollectionFile{
         $OneLine =~ m/radio\s*station\s+([a-zA-Z0-9_]+)/i   and $station = $1;
         $OneLine =~ m/radio\s*show\s+([a-zA-Z0-9_]+)/i      and $show = $1;
         $OneLine =~ m(url2record\s+([a-zA-Z0-9_:/\.\-]+))i  and $url = $1;
-        $OneLine =~ m/duration\s+([0-9]+)\s*h/i   and $duration = ($1 * 3600);
+        $OneLine =~ m/weeks2record\s+(.+)/i       and $weeks2record = $1;
+        $OneLine =~ m/duration\s+([0-9]+)\s*h/i   and $duration = $1 * 3600;
         $OneLine =~ m/duration\s+([0-9]+)\s*m/i   and $duration = $1 * 60;
         $OneLine =~ m/duration\s+([0-9]+)\s*min/i and $duration = $1 * 60;
         $OneLine =~ m/duration\s+([0-9]+)\s*s/i   and $duration = $1;
@@ -179,6 +184,11 @@ sub readCollectionFile{
     print "station                   |$station|\n";
     print "show                      |$show|\n";
     print "duration / s              |$duration|\n";
+    if ($weeks2record eq ""){
+        print "weeks2record              EVERY\n";
+    }else{
+        print "weeks2record              |$weeks2record|\n";
+    }
 } # end sub readCollectionFile
 
 # FUNCTION
@@ -202,11 +212,10 @@ sub usage{
 } # sub usage{
 
 # FUNCTION
-#   by given parameter -1..-5 the program to be executed after the recording is finished
-#   could receive information in special %... macros
-#   this funtion substiutes the %... macro with correct string
+#   This function substituts the %... macros given in the config file with the 
+#   >>execAfterRecording_[0-9]<< key
 # PARAMETERS 
-#   the string behind the -1 .. -5 option 
+#   the string behind the >>execAfterRecording_[0-9]<< key 
 # RETURNS
 #   the same string with the substitutions
 ###################################################################################################
@@ -227,8 +236,8 @@ sub substitute{
 } # end sub substitute{
 
 # FUNCTION
-#   This function executes the programs given at the command line options
-#   -1 .. -5 inclusive the given parameters and its substitutions %...
+#   This function executes the programs given in the config file with the 
+#   >>execAfterRecording_[0-9]<< key
 #   if testrun parameter -t is given nothing will be executed, it will just be 
 #   printed out to see if the substitions works as expected.
 # PARAMETERS
@@ -238,14 +247,31 @@ sub substitute{
 ###############################################################################
 sub execAfterRecording{
     local $aString;
-
     foreach (@toExec){
 	$aString = substitute($_);
 	if ($opt_t){ # just print out to check substs
             print "execute |$aString|\n";
-	} else { # no testrun real execution
+	} else {     # no testrun real execution
             `$aString`;
         }
     }
 } #endsub sub execAfterRecording
+
+# FUNCTION
+#   if ths week should be recordet this function returns true
+# PARAMETERS
+#   non
+# RETURNS
+#   true if this is on of the matching weeks
+###############################################################################
+sub recordThisWeek{
+    local $ThisWeek = `date +%W`;
+    chomp($ThisWeek);
+
+    if ($weeks2record eq "") { return 1; } # if no weeks2rekord are given, every week is right
+    if ((uc($weeks2record) eq "ODD")  and (($ThisWeek % 2) == 1)) { return 1; }
+    if ((uc($weeks2record) eq "EVEN") and (($ThisWeek % 2) == 0)) { return 1; }
+    foreach(split(/,/, $weeks2record)){  if ($_ == $ThisWeek)     { return 1; }  }
+    return 0;
+}
 
