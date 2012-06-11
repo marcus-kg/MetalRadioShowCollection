@@ -238,14 +238,12 @@ sub substitute{
 ###############################################################################
 sub execAfterRecording{
     local $aString;
-    
-    if ($opt_t){ # just print out to check substs
-        foreach (@toExec){
-            print "execute  |".substitute($_)."|\n";
-        }
-    } else { # no testrun real execution
-        foreach (@toExec){
-            $aString = substitute($_);
+
+    foreach (@toExec){
+	$aString = substitute($_);
+	if ($opt_t){ # just print out to check substs
+            print "execute |$aString|\n";
+	} else { # no testrun real execution
             `$aString`;
         }
     }
