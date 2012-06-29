@@ -1,3 +1,18 @@
+write an installer
+
+check if everything is available
+    streamripper
+    read, write permission to /etc/ /home/...
+create a dir at /home/.../ to record into
+backup existing /etc/Metal...
+create cofing file in /etc/ with correct setted pathes
+crontab:
+    backup crontab
+    delete all existing metalrecorder lines
+    append lines for each found *.mrscf file
+restart cron
+
+
 newer idea
 At least since it is possible to add strings for programs to excute, the call string in the /etc/crontab is too log again.
 solution: One config file in the /etc directory to set some pathes and programs to execute.
