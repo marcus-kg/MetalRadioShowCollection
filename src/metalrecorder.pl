@@ -273,5 +273,5 @@ sub recordThisWeek{
     if ((uc($weeks2record) eq "EVEN") and (($ThisWeek % 2) == 0)) { return 1; }
     foreach(split(/,/, $weeks2record)){  if ($_ == $ThisWeek)     { return 1; }  }
     return 0;
-}
+} # end sub sub recordThisWeek
 

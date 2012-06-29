@@ -9,6 +9,6 @@ duration         2h
 crontabString    2  20 * * MON
 
 recording type   PerTrac
-url2record       http://85.239.108.31/mp3-radiobob
+url2record       http://stream.hoerradar.de/mp3-radiobob
 hompage          http://radiobob.de
 
