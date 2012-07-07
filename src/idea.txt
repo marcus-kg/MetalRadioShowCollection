@@ -1,3 +1,11 @@
+manage timezone summertime chaos
+
+get localtime, offset utc isotime ... via long and lat
+http://www.earthtools.org/timezone-1.1/50.1109221/8.3267853
+if the recording starts 1 (maybe 2) houres befor it should, than one can ask this server for the real-time
+and wait one (or 2) houres
+
+
 write an installer
 
 check if everything is available
