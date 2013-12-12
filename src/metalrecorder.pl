@@ -2,8 +2,9 @@
 #use strict;            # im am unable to use strict together with getopts
 #use warnings;
 use Getopt::Std;
+use File::Path qw(make_path);
 
-my $version = "00.001"; # will be counted up anytime  
+my $version = "0.0.2";  # will be counted up anytime  
 my $RecordingType;      # p => one file Per trac | s => one Single File
 my $url;                # URL of the audiostream to record
 my $station;            # the name of the radio station is used to creare a directoryname 
@@ -14,7 +15,10 @@ my $configfile;         # Name of the configuration file to read
 my @toExec;             # the list of programs to be executed after recording is finished
 my $mrscfDirectory;     # Directory of the collection files *.mrscf
 my $GarbageCollection;  # if set to yes in config file: in single file recording the *.cue files are deleted and in one file per trac recordings the inclomplete directory will be deleted 
-my $recordingDirectory; # the root dir of recording here in directorys will be created for every show
+#my $recordingDirectory; # the root dir of recording here in directorys will be created for every show
+my $recDirSingleFile;
+my $recDirFielPerTrac;
+my $fileNameSingleFile;
 my $additionalParameter;# appendet to Streamripper
 
 @ARGV or usage();       # missing any parameter
@@ -31,12 +35,11 @@ if ($opt_c){
 }
 
 $opt_f or die "need a file to read with -f <NAME_OF_COLLECTION_FILE>\n";
+$DateString = `date +%Y-%m-%d`; #YYYY-MM-DD
+chomp($DateString);
 
 readConfigFile($configfile, $opt_f);
 readCollectionFile("$mrscfDirectory/$opt_f");
-
-$DateString = `date +%Y-%m-%d`; #YYYY-MM-DD
-chomp($DateString);
 
 if (recordThisWeek()){
     record();
@@ -73,11 +76,13 @@ sub readConfigFile
         }elsif ( $OneLine =~ m /\[[\w\-\.]+\]/ ){       # found a [SECTION] but other than mine
             $ThisSectionIsForMe = 0;
         }elsif ( $ThisSectionIsForMe ){                 # other lines are only inresting if they are insiede my [SECTION]
-            # directories
+            # directories an file Name
             $OneLine =~ m/mrscfDirectory\s+([\w-\.\/]+)/i     and $mrscfDirectory     = $1;            
-            $OneLine =~ m/recordingDirectory\s+([\w-\.\/]+)/i and $recordingDirectory = $1;
+            $OneLine =~ m/RecordingDirectoryForOneSingleFile\s+([\w-\.\/\%]+)/i and $recDirSingleFile = $1;
+            $OneLine =~ m/FileNameForOneSingleFile\s+([\w-\.\/\%]+)/i and $fileNameSingleFile = $1;
+            $OneLine =~ m/RecordingDirectoryOneFilePerTrac\s+([\w-\.\/\%]+)/i and $recDirFielPerTrac = $1;
             # GarbageCollection y[es] or n[o]
-            $OneLine =~ m/GarbageCollection\s+y/i and $GarbageCollection  = 1; 
+            $OneLine =~ m/GarbageCollection\s+y/i and $GarbageCollection  = 1;
             $OneLine =~ m/GarbageCollection\s+n/i and $GarbageCollection  = 0;
             # list of programs to execute after recording
             $OneLine =~ m/execAfterRecording_([0-9]+)\s+(.+$)/i and $toExec[$1] = $2;
@@ -94,7 +99,9 @@ sub readConfigFile
     print "ConfigFile:               |$cfgFileName|\n";
     print "CollectionFile:           |$collectionFileName|\n";
     print "mrscfDirectory:           |$mrscfDirectory|\n";
-    print "Recording into:           |$recordingDirectory|\n";
+    print "Recording into S:         |$recDirSingleFile|\n";
+    print "Name of large file:       |$fileNameSingleFile|\n";
+    print "Recording into P:         |$recDirFielPerTrac|\n";
     print "GarbageCollection:        "; ($GarbageCollection)? print "yes\n": print "no\n";
     print "additionalParameter:      |$additionalParameter|\n";    
 } # end sub readConfigFile
@@ -111,25 +118,24 @@ sub readConfigFile
 sub record{
     if ($RecordingType eq "p"){ # one file per trac
         if ($opt_t){            # testrun
-            print "streamripper $url -t -q -d $recordingDirectory/$station-$show/$DateString/ -l $duration -s $additionalParameter\n";
+            print "streamripper $url -t -q -d $recDirFielPerTrac -l $duration -s $additionalParameter\n";
         }else{                  # no testrun => do it
-            mkdir("$recordingDirectory/$station-$show"); 
-            if (!-d "$recordingDirectory/$station-$show") { die "could not mkdir $recordingDirectory/$station-$show\n"; }
+            make_path("$rrecDirFielPerTrac"); 
+            if (!-d "$recDirFielPerTrac") { die "could not mkdir $recDirFielPerTrac\n"; }
 
-            mkdir("$recordingDirectory/$station-$show/$DateString");
-            if (!-d "$recordingDirectory/$station-$show/$DateString") { die "could not mkdir $recordingDirectory/$station-$show/$DateString\n"; } 
-            `streamripper $url -t -q -d $recordingDirectory/$station-$show/$DateString/ -l $duration -s $additionalParameter`;
+            `streamripper $url -t -q -d $recDirFielPerTrac -l $duration -s $additionalParameter`;
             if ($GarbageCollection){
                 `rm -r $recordingDirectory/$station-$show/$DateString/incomplete/`;
             }
         }
     }elsif ($RecordingType eq "s"){ # record into one single file
         if ($opt_t){                # testrun 
-            print "streamripper $url -t -A -q -d $recordingDirectory/$station-$show -a $show-$DateString/ -l $duration -s $additionalParameter\n";
+            print "streamripper $url -t -A -q -d $recDirSingleFile -a $fileNameSingleFile -l $duration -s $additionalParameter\n";
         }else{                      # no testrun => do it
-            mkdir("$recordingDirectory/$station-$show");
-            if (!-d "$recordingDirectory/$station-$show"){ die "could not mkdir $recordingDirectory/$station-$show\n"; }
-            `streamripper $url -t -A -q -d $recordingDirectory/$station-$show -a $show-$DateString -l $duration -s $additionalParameter`;
+            make_path("$recDirSingleFile");
+            if (!-d "$recDirSingleFile"){ die "could not mkdir $recDirSingleFile\n"; }
+            
+            `streamripper $url -t -A -q -d $recDirSingleFile -a $fileNameSingleFile -l $duration -s $additionalParameter`;
             if ($GarbageCollection){
                 `rm $recordingDirectory/$station-$show/*.cue`;
             }
@@ -170,6 +176,11 @@ sub readCollectionFile{
             }
         }
     } # end of file reading
+    
+    # substitute the strings for directoriy- and file names
+    $recDirFielPerTrac = substitute( $recDirFielPerTrac ); 
+    $fileNameSingleFile = substitute( $fileNameSingleFile );
+    $recDirSingleFile = substitute( $recDirSingleFile );
 
     # see if all necessary information is given
     if ( "$duration" eq "" )          { die "no duration found in $_[0]\n";      }
@@ -184,6 +195,11 @@ sub readCollectionFile{
     print "station                   |$station|\n";
     print "show                      |$show|\n";
     print "duration / s              |$duration|\n";
+    print "substitued\n";
+    print "Recording into S          |$recDirSingleFile|\n";
+    print "Name of large file        |$fileNameSingleFile|\n";
+    print "Recording into P          |$recDirFielPerTrac|\n";
+
     if ($weeks2record eq ""){
         print "weeks2record              EVERY\n";
     }else{
@@ -220,17 +236,17 @@ sub usage{
 #   the same string with the substitutions
 ###################################################################################################
 sub substitute{
-    $_[0] =~ s/\%url/$url/g;
-    $_[0] =~ s/\%show/$show/g;
-    $_[0] =~ s/\%station/$station/g;
-    $_[0] =~ s/\%duration/$duration/g;
-    $_[0] =~ s/\%DateString/$DateString/g;
+    $_[0] =~ s/\%UrlOfStreamToRecord/$url/ig;
+    $_[0] =~ s/\%NameOfRadioShow/$show/ig;
+    $_[0] =~ s/\%NameOfRadioStation/$station/ig;
+    $_[0] =~ s/\%RecordingDurationIn_s/$duration/ig;
+    $_[0] =~ s/\%DateString/$DateString/ig;
     if ($RecordingType eq "p"){                      # record one file per trac
-        $_[0] =~ s/%dir/$recordingDirectory\/$station\-$show\/$DateString\//g;
-        $_[0] =~ s/%file/$show\-$DateString/g;
+        $_[0] =~ s/%RecordingDirectory/$recDirFielPerTrac/ig;
+        $_[0] =~ s/%RecordingFileName/various/ig;
     } else {                                         # record one large file
-        $_[0] =~ s/%dir/$recordingDirectory\/$station\-$show\//g;
-        $_[0] =~ s/%file/DifferentNamesForEachFile/g;
+        $_[0] =~ s/%RecordingDirectory/$recDirSingleFile/ig;
+        $_[0] =~ s/%RecordingFileName/$fileNameSingleFile/ig;
     }
     return $_[0];
 } # end sub substitute{
