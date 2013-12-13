@@ -120,7 +120,7 @@ sub record{
         if ($opt_t){            # testrun
             print "streamripper $url -t -q -d $recDirFielPerTrac -l $duration -s $additionalParameter\n";
         }else{                  # no testrun => do it
-            make_path("$rrecDirFielPerTrac"); 
+            make_path($recDirFielPerTrac);
             if (!-d "$recDirFielPerTrac") { die "could not mkdir $recDirFielPerTrac\n"; }
 
             `streamripper $url -t -q -d $recDirFielPerTrac -l $duration -s $additionalParameter`;
@@ -132,7 +132,7 @@ sub record{
         if ($opt_t){                # testrun 
             print "streamripper $url -t -A -q -d $recDirSingleFile -a $fileNameSingleFile -l $duration -s $additionalParameter\n";
         }else{                      # no testrun => do it
-            make_path("$recDirSingleFile");
+            make_path($recDirSingleFile);
             if (!-d "$recDirSingleFile"){ die "could not mkdir $recDirSingleFile\n"; }
             
             `streamripper $url -t -A -q -d $recDirSingleFile -a $fileNameSingleFile -l $duration -s $additionalParameter`;
