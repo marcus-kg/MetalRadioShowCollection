@@ -4,7 +4,7 @@ radioStation 	 RRRRadio_Mittweida_99_3
 radio show       TTTTTinnitus
 
 date             Mo 21:00..23:00
-timezone         Europe/Berlin
+timezone         Europe/Berlin  
 duration         2h
 #weeks2record     1,2,3,4,lsmföp,23,7
 
@@ -12,16 +12,17 @@ recording type   SingleFile  	# blub
 url2record       http://netradio.ext.htwm.de:8000/live128.m3u   # go
 hompage          http://tinnitus.kilu.de
 
-REC: min = 0..5 & week = 1, 3, 5, 12 & h=21 dow = odd
-REC: min 0..5   & h=22 & week= even
+REC: min= 0..7   & h=2 & week= even
+REC: minute = 0..5 & week = 1, 3, 5, 12 & h=22 & dow = THU
+REC: doy = 15, 16, 18, 20 & year = 2015
 
 
-das Schlüsselwort REC: leitet eine Aufnahmezeitbeschreibung ein
+das Schlüsselwort R EC: leitet eine Aufnahmezeitbeschreibung ein
 in der selben Zeile wird eine >>&<< getrente Liste angehängt.
 Jeder Ausdruck in dieser Liste ist eine Wertzuweisung auf 
 vordefinierte Variablen. 
 Alle Ausdrücke einer Zeile müssen erfüllt sein um die Aufnahme zu starten. 
-Es können mehrere REC: Zeilen in einer mrscf-Datei enthalten sein. Wenn eine Zeile erfüllt ist wird aufgezeichnet.
+Es können mehrere R EC: Zeilen in einer mrscf-Datei enthalten sein. Wenn eine Zeile erfüllt ist wird aufgezeichnet.
 
 variable          range   default 
 min   minute      0..59   0..5
@@ -45,7 +46,7 @@ case dosent matter
 
           +-<--"&"---------<--------------------------------------------------+
           V                                                                   ^
---"REC:"--+-+--"min"-------->--+-----"="--------+----[NUMBER]-+---------------+--+-->  // one single number is valid--[AOV]---+-->
+--"RE C:"--+-+--"min"-------->--+-----"="--------+----[NUMBER]-+---------------+--+-->  // one single number is valid--[AOV]---+-->
             +--"minute"----->--+                |  ^          V               |
             V                  ^                V  +--<--[,]--+               ^        // a comma separated list of numers is as well
             +--"h"---------->--+                |                             |
@@ -123,11 +124,11 @@ case dosent matter
 
 - strip all whitespace
 - make all UPPERCASE
-- cut >>REC:<< at Beginning of line
+- cut >>R EC:<< at Beginning of line
 - substitute day and month names with their values
 - split at & symbol to single terms
 - find out if minute houre .. is given
-- check the list if actual time in actual timezone maches or not
+- check the list if actual time in actual time zone maches or not
     -- is a ragnge given?(find..) :  from <= actual <= to
     -- is a list given? :            true if one value maches
     -- odd or even 
