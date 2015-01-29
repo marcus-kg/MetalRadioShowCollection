@@ -3,6 +3,7 @@
 #use warnings;
 use Getopt::Std;
 use File::Path qw(make_path);
+use POSIX qw(tzset);           # timezoen set
 
 my $version = "0.0.2";  # will be counted up anytime  
 my $RecordingType;      # p => one file Per trac | s => one Single File
@@ -89,7 +90,7 @@ sub readConfigFile
             # additional parameters to Streamripper
             $OneLine =~ m/additionalParameter\s+(.+)/i and $additionalParameter = $1;
         }
-    } # and while oneLine 
+    } # end while oneLine 
 
     # missing some obligatory information => write message and exit
     #$mrscfDirectory     eq "" and die "No directory given to find the collection-File *. mrscf: need a mrscfDirectory entry in $cfgFileName\n";
@@ -178,9 +179,9 @@ sub readCollectionFile{
     } # end of file reading
     
     # substitute the strings for directoriy- and file names
-    $recDirFielPerTrac = substitute( $recDirFielPerTrac ); 
+    $recDirFielPerTrac  = substitute( $recDirFielPerTrac  ); 
     $fileNameSingleFile = substitute( $fileNameSingleFile );
-    $recDirSingleFile = substitute( $recDirSingleFile );
+    $recDirSingleFile   = substitute( $recDirSingleFile   );
 
     # see if all necessary information is given
     if ( "$duration" eq "" )          { die "no duration found in $_[0]\n";      }
@@ -291,3 +292,151 @@ sub recordThisWeek{
     return 0;
 } # end sub sub recordThisWeek
 
+# FUNCTION
+#   compare actual value to setpoint
+# PARAMETERS
+#   1. actual value
+#   2. setpoint single value,range, komma separated list of values, odd or even
+# RETURNS
+#   true if matches
+###############################################################################
+sub compActSetpoint{
+    my $actualval; # now minute, houre, day ...
+    my $setpoint;  # one value, komma separated list range with .. , odd or even
+    my $retval = 0;
+    ($actualval, $setpoint) = @_;
+    if ( $setpoint =~ m/^[0-9]+$/ ){ # one single Value
+        $retval = ( $actualval == $setpoint );
+    }
+    elsif ( $setpoint =~ m/[0-9]+,[0-9]+/) { # komma separated list
+        $retval = 0;
+        @slited = split(',', $setpoint )
+        foreach ( @splited )
+        {
+            if ( $actualval == $_ ) { $retval = 1; }
+        }
+    }
+    elsif ( $setpoint =~ m/^([0-9]+)\.\.([0-9]+)$/) { # range e.g. 4..7
+        $retval = ( $actualval >= $1 ) && ( $actual <= $2 ); 
+    }
+    elsif ( $setpoint =~ m/^ODD$/ ) { # 1 3 5 7 ...
+        $retval = ( ($actualval % 2) == 1 );
+    }
+    elsif ( $setpoint =~ m/^EVEN$/ ) { # 0 2 4 6 ...
+        $retval = ( ($actualval % 2) == 0 );   
+    }
+    else {
+        $retval = 0;
+    }
+    return $retval,
+} # end sub compActSetpoint{
+
+# FUNCTION
+#   
+# PARAMETERS
+#   1. timezone as string
+#   2. one timestring every thing behind REC: in mrscf-file
+# RETURNS
+#   true if actual time in actual timestring matches
+###############################################################################
+sub actualTimeMatches {
+    my $timeZone;          # liḱe "Europe/Berlin"
+    my $timeString;        # like : "min=0..5 & h=20 & Mon = odd & dayOfWeek = sun";
+    my @splitedTimeString; # splited via & 
+    my $startRecord = 1;    # return value
+    my $sec;    # seconds
+    my $min;    # minutes
+    my $hour;   #
+    my $mday;   # day of month 1..31         
+    my $mon;    # month 1..12
+    my $year;   # 4 digits 
+    my $wday;   # day of the week 0..6 0 = sunday 
+    my $yday;   # day of the year 1..365
+    my $isdst;  # is daylight saving time 0 or 1 
+    my $week;   # o dont know how it is counted, the call date +%W gives this Valur
+
+    ($timeZone, $timeString) = @_;
+    $timeString = uc($timeString);
+    $timeString =~ s/^REC://g;
+    $timeString =~ s/\s//g;
+    
+    $timeString =~ s/MONDAY/1/g;
+    $timeString =~ s/MO/1/g;
+    $timeString =~ s/TUESDAY/2/g;
+    $timeString =~ s/TUE/2/g;
+    $timeString =~ s/TU/2/g;
+    $timeString =~ s/WEDNESDAY/3/g;
+    $timeString =~ s/WED/3/g;
+    $timeString =~ s/WE/3/g;
+    $timeString =~ s/THURSDAY/4/g;
+    $timeString =~ s/THU/4/g;
+    $timeString =~ s/TH/4/g;
+    $timeString =~ s/FRIDAY/5/g;
+    $timeString =~ s/FRI/5/g;
+    $timeString =~ s/FR/5/g;
+    $timeString =~ s/SATURDAY/6/g;
+    $timeString =~ s/SAT/6/g;
+    $timeString =~ s/SA/6/g;
+    $timeString =~ s/SUNDAY/0/g;
+    $timeString =~ s/SUN/0/g;
+    $timeString =~ s/SU/0/g;
+    $timeString =~ s/JANUARY/1/g;
+    $timeString =~ s/JAN/1/g;
+    $timeString =~ s/FEBRUARY/2/g;
+    $timeString =~ s/FEB/2/g;
+    $timeString =~ s/MARCH/3/g;
+    $timeString =~ s/MAR/3/g;
+    $timeString =~ s/APRIL/4/g;
+    $timeString =~ s/AP/4/g;
+    $timeString =~ s/MAY/5/g;
+    $timeString =~ s/JUNE/6/g;
+    $timeString =~ s/JUN/6/g;
+    $timeString =~ s/JULY/7/g;
+    $timeString =~ s/JUL/7/g;
+    $timeString =~ s/AUGUST/8/g;
+    $timeString =~ s/AUG/8/g;
+    $timeString =~ s/SEPTEMBER/9/g;
+    $timeString =~ s/SEP/9/g;
+    $timeString =~ s/OCTOBER/10/g;
+    $timeString =~ s/OCT/10/g;
+    $timeString =~ s/NOVEMBER/11/g;
+    $timeString =~ s/NOV/11/g;
+    $timeString =~ s/DECEMBER/12/g;
+    $timeString =~ s/DEC/12/g;
+
+    $ENV{TZ} = $timeZone;
+    tzset;
+    ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =  localtime(time);
+    $year = $year + 1900;
+    $week = `date +%W`;
+
+    @splitedTimeString = spit('&', $timeString);       
+    foreach( @splitedTimeString ) {
+        if ( $_ =~ m/^MINUTE=(.+)|^MIN=(.+)/ ) { 
+            if ( not compActSetpoint( $min, $1 ) ){ $startRecord = 0; }
+        }
+        if ( $_ =~ m/^HOUR=(.+)|^H=(.+)/ ) { 
+            if ( not compActSetpoint( $hour, $1 ) ){ $startRecord = 0; }
+        }
+        if ( $_ =~ m/^DAYOFWEEK=(.+)|^DOW=(.+)/ ) { 
+            if ( not compActSetpoint( $wday, $1 ) ){ $startRecord = 0; }
+        }
+        if ( $_ =~ m/^DAYOFMONTH=(.+)|^DOM=(.+)/ ) { 
+            if ( not compActSetpoint( $mday, $1 ) ){ $startRecord = 0; }
+        }
+        if ( $_ =~ m/^DAYOFYEAR=(.+)|^DOY=(.+)/ ) { 
+            if ( not compActSetpoint( $yday, $1 ) ){ $startRecord = 0; }
+        }
+        if ( $_ =~ m/^WEEK=(.+)|^W=(.+)/ ) { 
+            if ( not compActSetpoint( $week, $1 ) ){ $startRecord = 0; }
+        }
+        if ( $_ =~ m/^MONTH=(.+)|^MON=(.+)/ ) { 
+            if ( not compActSetpoint( $mon, $1 ) ){ $startRecord = 0; }
+        }
+        if ( $_ =~ m/^YEAR=(.+)|^Y=(.+)/ ) { 
+            if ( not compActSetpoint( $year, $1 ) ){ $startRecord = 0; }
+        }
+    }
+    
+    retun $startRecord;    
+} # end sub actualTimeMatches {

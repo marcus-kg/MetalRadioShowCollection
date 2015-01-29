@@ -1,0 +1,134 @@
+status           god, often recordet
+
+radioStation 	 RRRRadio_Mittweida_99_3
+radio show       TTTTTinnitus
+
+date             Mo 21:00..23:00
+timezone         Europe/Berlin
+duration         2h
+#weeks2record     1,2,3,4,lsmföp,23,7
+
+recording type   SingleFile  	# blub
+url2record       http://netradio.ext.htwm.de:8000/live128.m3u   # go
+hompage          http://tinnitus.kilu.de
+
+REC: min = 0..5 & week = 1, 3, 5, 12 & h=21 dow = odd
+REC: min 0..5   & h=22 & week= even
+
+
+das Schlüsselwort REC: leitet eine Aufnahmezeitbeschreibung ein
+in der selben Zeile wird eine >>&<< getrente Liste angehängt.
+Jeder Ausdruck in dieser Liste ist eine Wertzuweisung auf 
+vordefinierte Variablen. 
+Alle Ausdrücke einer Zeile müssen erfüllt sein um die Aufnahme zu starten. 
+Es können mehrere REC: Zeilen in einer mrscf-Datei enthalten sein. Wenn eine Zeile erfüllt ist wird aufgezeichnet.
+
+variable          range   default 
+min   minute      0..59   0..5
+h     houre       0..23   any  
+dow	  DayOfWeek   0..7    any     // 0=7=Sun // m,mo,mon,monday, tu,tue,tuesday we,wed,wednesday th,thu,thursday, f,fr,fri,friday, sa,sat,saturday, su,sun,sunday
+dom	  DayOfMonth  1..31   any
+doy	  DayOfYear   1..366  any
+w     Week        0..52   any     // iso week number
+mon   month       1..12   any     // jan,januar, feb,febuar, mar,march
+y     year        2014..* any
+
+Possible Values to assign:
+ - one singel Value
+ - Komma separated List of Values
+ - Range <FROM>..<To> (with 2 dots)
+ - odd or even
+
+whitespace  will be ignored
+equality sign can be omomitted
+case dosent matter
+
+          +-<--"&"---------<--------------------------------------------------+
+          V                                                                   ^
+--"REC:"--+-+--"min"-------->--+-----"="--------+----[NUMBER]-+---------------+--+-->  // one single number is valid--[AOV]---+-->
+            +--"minute"----->--+                |  ^          V               |
+            V                  ^                V  +--<--[,]--+               ^        // a comma separated list of numers is as well
+            +--"h"---------->--+                |                             |
+            +--"hour"------->--+                +--[NUMBER]--".."--[NUMBER]->-+        // a range is given as two numbers with two dots between them
+            V                  ^                +--"odd"-------------------->-+        // "odd" or "even" are some kind of special ranges
+            +--"dow--------->--+                +--"even"------------------->-+
+            +--"DayOfWeek--->--+
+            V                  ^
+            +--"dom--------->--+
+            +--"DayOfMonth-->--+
+            V                  ^
+            +--"dow--------->--+
+            +--"DayOfWeek--->--+
+            V                  ^
+            +--"doy--------->--+
+            +--"DayOfYear--->--+
+            V                  ^
+            +--"w----------->--+
+            +--"Week-------->--+
+            V                  ^
+            +--"mon--------->--+
+            +--"month------->--+
+            V                  ^
+            +--"y----------->--+
+            +--"year-------->--+
+
+[NUMBER]
+=========
+--+--[NON_ZERO_DIGIT]-->--+--[DIGIT]--+-->--+-->
+  |                       ^           V     |
+  V                       +----<------+     ^
+  +--"mo"------------------------>----------+   //  1
+  +--"Monday"-------------------->----------+   //  1
+  +--"tu"------------------------>----------+   //  2
+  +--"tue"----------------------->----------+   //  2
+  +--"Tuesday"------------------->----------+   //  2
+  +--"we"------------------------>----------+   //  3
+  +--"wed"----------------------->----------+   //  3
+  +--"Wednesday"----------------->----------+   //  3
+  +--"th"------------------------>----------+   //  4
+  +--"thu"----------------------->----------+   //  4
+  +--"Thursday"------------------>----------+   //  4
+  +--"fr"------------------------>----------+   //  5
+  +--"fri"----------------------->----------+   //  5
+  +--"Friday"-------------------->----------+   //  5
+  +--"sa"------------------------>----------+   //  6
+  +--"sat"----------------------->----------+   //  6
+  +--"Saturday"------------------>----------+   //  6
+  +--"su"------------------------>----------+   //  0
+  +--"sun"----------------------->----------+   //  0
+  +--"Sunday"-------------------->----------+   //  0
+  +--"jan"----------------------->----------+   //  1
+  +--"January"------------------->----------+   //  1
+  +--"feb"----------------------->----------+   //  2
+  +--"February"------------------>----------+   //  2
+  +--"mar"----------------------->----------+   //  3
+  +--"March"--------------------->----------+   //  3
+  +--"ap"------------------------>----------+   //  4
+  +--"April"--------------------->----------+   //  4
+  +--"May"----------------------->----------+   //  5
+  +--"jun"----------------------->----------+   //  6
+  +--"June"---------------------->----------+   //  6
+  +--"jul"----------------------->----------+   //  7
+  +--"July"---------------------->----------+   //  7
+  +--"aug"----------------------->----------+   //  8
+  +--"August"-------------------->----------+   //  8
+  +--"sep"----------------------->----------+   //  9
+  +--"September"----------------->----------+   //  9
+  +--"oct"----------------------->----------+   // 10
+  +--"October"------------------->----------+   // 10
+  +--"nov"----------------------->----------+   // 11
+  +--"November"------------------>----------+   // 11
+  +--"dec"----------------------->----------+   // 12
+  +--"December"------------------>----------+   // 12
+
+- strip all whitespace
+- make all UPPERCASE
+- cut >>REC:<< at Beginning of line
+- substitute day and month names with their values
+- split at & symbol to single terms
+- find out if minute houre .. is given
+- check the list if actual time in actual timezone maches or not
+    -- is a ragnge given?(find..) :  from <= actual <= to
+    -- is a list given? :            true if one value maches
+    -- odd or even 
+    -- esle its a single value :     
