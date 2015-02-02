@@ -1,0 +1,13 @@
+status           good often recordet
+
+radio station    RadioBob
+radio show       BoBsHarteSaite
+
+date             Mo 21:00..00:00
+timezone         Europe/Berlin
+duration         3h
+
+recording type   PerTrac
+url2record       http://stream.hoerradar.de/mp3-radiobob
+hompage          http://radiobob.de
+REC:             hour=21 & min=0..5 & dow=monday

@@ -1,0 +1,14 @@
+status           god, often recordet
+
+radio station    RockAntenne
+radio show       TuffStuff
+
+date             sat. 23:00
+timezone         Europe/Berlin
+duration         2h
+crontabString    2 22 * * THU
+
+recording type   PerTrac
+url2record       http://www.rockantenne.de/webradio/rockantenne.m3u
+hompage          http://www.rockantenne.de/tuff-stuff
+REC:             hour = 23  &  min = 0..15  &  dow = sat

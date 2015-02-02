@@ -7,7 +7,11 @@ print "It was      $was\n";
 
 #$ENV{TZ} = 'America/Los_Angeles';
 $tzstring = "America/Los_Angeles";
+#$tzstring = "lsnf/driss";
 $ENV{TZ} = $tzstring;
+if ( not -e "/usr/share/zoneinfo/".$tzstring ){
+    print "gibbetnet\n";
+}
 
 $was = localtime;
 print "It is still $was\n";

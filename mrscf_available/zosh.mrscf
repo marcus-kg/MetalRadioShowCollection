@@ -1,0 +1,13 @@
+status           god, often recordet
+
+radio station    RadioZ
+radio show       Zosh
+
+timezone         Europe/Berlin
+date             We 21:00
+duration         3h
+
+recording type   SingleFile
+url2record       http://www.distler-tontechnik.de/Radio-Z.m3u
+hompage          http://zosh.radio-z.net
+REC:             hour = 21  &  min 0..5  &  dow = wed

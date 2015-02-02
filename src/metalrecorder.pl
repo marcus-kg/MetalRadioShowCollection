@@ -42,7 +42,11 @@ $DateString = `date +%Y-%m-%d`; #YYYY-MM-DD
 chomp($DateString);
 
 readConfigFile($configfile, $opt_f);
-readCollectionFile("$mrscfDirectory/$opt_f");
+if ( $opt_f =~ m@^/.+@ ){ # if it starts wiht a slash a full path is given
+    readCollectionFile("$opt_f");
+} else {                   # only filename is given
+    readCollectionFile("$mrscfDirectory/mrscf_enabled/$opt_f");
+}
 
 foreach ( @recLines ){
     if ( actualTimeMatches( $TimeZoneRead, $_) ){
@@ -274,10 +278,10 @@ sub substitute{
 sub execAfterRecording{
     local $aString;
     foreach (@toExec){
-	$aString = substitute($_);
-	if ($opt_t){ # just print out to check substs
+	    $aString = substitute($_);
+	    if ($opt_t){ # just print out to check substs
             print "execute |$aString|\n";
-	} else {     # no testrun real execution
+	    } else {     # no testrun real execution
             `$aString`;
         }
     }
@@ -322,6 +326,9 @@ sub compActSetpoint{
     elsif ( $setpoint =~ m/^EVEN$/ ) { # 0 2 4 6 ...
         $retval = ( ($actualval % 2) == 0 );
         #print "even\n";   
+    }
+    elsif ( $setpoint =~ m@\*/([0-9]+)@ ) { # */5  = 5, 10, 15, 20  
+        $retval = ($actualval % $1) == 0;
     }
     else {
         $retval = 0;
@@ -453,6 +460,9 @@ sub actualTimeMatches {
         }
         elsif ( $_ =~ m/^Y=(.+)/ ) { 
             if ( not compActSetpoint( $year, $1 ) ){ $startRecord = 0; }
+        }
+        elsif ( $_ =~ m/^OODIM=(.+)/ ) { 
+            if ( not compActSetpoint( ($mday%7)+1, $1 ) ){ $startRecord = 0; }
         }
         else
         {
