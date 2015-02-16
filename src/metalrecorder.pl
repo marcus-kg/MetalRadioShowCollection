@@ -4,8 +4,9 @@
 use Getopt::Std;
 use File::Path qw(make_path);
 use POSIX qw(tzset);           # timezoen set
+use POSIX qw(floor);
 
-my $version = "0.0.2";  # will be counted up anytime  
+my $version = "0.0.3";  # will be counted up anytime  
 my $RecordingType;      # p => one file Per trac | s => one Single File
 my $url;                # URL of the audiostream to record
 my $station;            # the name of the radio station is used to creare a directoryname 
@@ -42,7 +43,7 @@ $DateString = `date +%Y-%m-%d`; #YYYY-MM-DD
 chomp($DateString);
 
 readConfigFile($configfile, $opt_f);
-if ( $opt_f =~ m@^/.+@ ){ # if it starts wiht a slash a full path is given
+if ( $opt_f =~ m@^/.+@ ){ # if it starts with a slash a full path is given
     readCollectionFile("$opt_f");
 } else {                   # only filename is given
     readCollectionFile("$mrscfDirectory/mrscf_enabled/$opt_f");
@@ -74,6 +75,7 @@ sub readConfigFile
     my $ThisSectionIsForMe;         # bool yes bevor the first section is known and if the current section matches the collectionFileName
     
     ($cfgFileName, $collectionFileName) = @_;
+    $collectionFileName =~ s@^.*/@@g;  # only the filename without path is needed here
     
     $ThisSectionIsForMe = 1;        # when start reading the file the lines above the first section are globale settings
     $GarbageCollection  = 0;        # do not delete to much
@@ -462,7 +464,7 @@ sub actualTimeMatches {
             if ( not compActSetpoint( $year, $1 ) ){ $startRecord = 0; }
         }
         elsif ( $_ =~ m/^OODIM=(.+)/ ) { 
-            if ( not compActSetpoint( ($mday%7)+1, $1 ) ){ $startRecord = 0; }
+            if ( not compActSetpoint( (floor($mday-1)/7)+1, $1 ) ){ $startRecord = 0; }
         }
         else
         {
