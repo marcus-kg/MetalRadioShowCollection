@@ -1,46 +1,21 @@
-manage timezone summertime chaos
-http://stackoverflow.com/questions/753346/how-do-i-set-the-timezone-for-perls-localtime
-heerein are some descriptions. i like that one with posix because it downt need to install any perl packages
 
+* write more and better documentation
+* clean up
+* move some of the functions in a module and write some unit tests
+* write a checker for the config-file and the mrscf-files
+* do some logging, log-rotating
+* present all available as rss-feed, as least that one that are recorded as single file 
+* build some kind of GUI, preferred to run as html on the server
+* write an installer
+    check if everything is available
+        streamripper
+        read, write permission to /etc/ /home/...
+    create a dir at /home/.../ to record into
+    backup existing /etc/Metal...
+    create cofing file in /etc/ with correct setted pathes
+    crontab:
+        backup crontab
+        delete all existing metalrecorder lines
+        append lines for each found *.mrscf file
+    restart cron
 
-get localtime, offset utc isotime ... via long and lat
-http://www.earthtools.org/timezone-1.1/50.1109221/8.3267853
-if the recording starts 1 (maybe 2) houres befor it should, than one can ask this server for the real-time
-and wait one (or 2) houres
-
-
-write an installer
-
-check if everything is available
-    streamripper
-    read, write permission to /etc/ /home/...
-create a dir at /home/.../ to record into
-backup existing /etc/Metal...
-create cofing file in /etc/ with correct setted pathes
-crontab:
-    backup crontab
-    delete all existing metalrecorder lines
-    append lines for each found *.mrscf file
-restart cron
-
-
-newer idea
-At least since it is possible to add strings for programs to excute, the call string in the /etc/crontab is too log again.
-solution: One config file in the /etc directory to set some pathes and programs to execute.
-Splited into sections the first section is global and could be overridden in mrscf-file.spcific sections below.
-
-
-new idea
-The string to call the recordradio.sh scipt ist too long.
-- i could write a script that takes the textfile as one argumet
-  and the recording directory as an otherone because this does not belong to the collection file.
-- another script could handle the time zone recalculation of the crontabsring 
-metalrecorder.pl -f /home/marcus/src/MetalRadioShowCollection/tinnitus.txt -d /home/marcus/radioshows
-reCalcCronString.pl tinnitus.sh
-
-old idea
-write a script that can read the txt files and creare a string to appaend at crontab
-with recalculation of radiostation timezone and own timezone.
-
-use it like this:
-<NAME_OF_SCRIPT> a_radioshow.txt 5 >> /etc/crontab
