@@ -1,0 +1,9 @@
+radio station    star_fm
+radio show       heavy_hour
+
+timezone         Europe/Berlin
+duration         2h
+
+url2record       http://85.25.43.55/berlin.mp3
+
+REC:             hour = 20  &  min = 45..50  &  dow = thu

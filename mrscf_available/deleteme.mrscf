@@ -1,16 +1,12 @@
-status           god, often recordetOC
 
 radioStation 	 RRRRadio_Mittweida_99_3
 radio show       TTTTTinnitus
 
-date             Mo 21:00..23:00
 timezone         Europe/Berlin
 duration         2h
 
 
-recording type   SingleFile  	# blub
 url2record       http://netradio.ext.htwm.de:8000/live128.m3u   # go
-hompage          http://tinnitus.kilu.de
 
 REC: doy = */5 & year = 2015 & oodim = 3
 REC: min= 0..7   & h=2 & week= even

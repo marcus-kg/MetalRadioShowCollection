@@ -1,14 +1,9 @@
-status           god, often recordet
-
 radio station    RockAntenne
 radio show       MileStones
 
-date             Su 17:00
 timezone         Europe/Berlin
 duration         1h
-crontabString    2 17 * * SUN
 
-recording type   PerTrac
 url2record       http://www.rockantenne.de/webradio/rockantenne.m3u
-hompage          http://Rockantenne.de
+
 REC:             hour = 17  &  min = 0..5  &  dow = sun 

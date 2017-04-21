@@ -1,0 +1,9 @@
+radio station    tbd
+radio show       nn
+
+timezone         Europe/Lisbon
+duration         1h
+
+url2record       http://centova.radio.com.pt:9464/
+
+REC:             hour = 20  &  min = 0..5  &  dow = tu & oodim = 4

@@ -1,8 +1,9 @@
 radio station    RadioUnerhoertMarburg
-radio show       HoellenLaerm
+radio show       Progressiva
 
 timezone         Europe/Berlin
 duration         2h
 
 url2record       http://stream.radio-rum.de:8000/rum.mp3.m3u
-REC:             hour = 16  &  min = 0..5  &  dow = sun  &  oodim = 2, 4
+
+REC:             hour = 20  &  min = 0..5  &  dow = tu  &  oodim = 4

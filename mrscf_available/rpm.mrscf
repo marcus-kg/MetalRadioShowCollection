@@ -1,0 +1,9 @@
+radio station    TheRock
+radio show       rpm
+
+timezone         Pacific/Auckland
+duration         1h
+
+url2record       http://icecast.mediaworks.co.nz:8000/therock
+
+REC:             hour = 21  &  min = 0..5  &  dow = Fri

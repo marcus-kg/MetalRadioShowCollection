@@ -1,16 +1,9 @@
-status           god, often recordet | new, to be recordet soon   # informative
+radio station       BRODCASER_NAME # neded to create dir name
+radio show          Show_NAME# neded to create dir- or file- name
 
-radio station       # neded to create dir name
-radio show          # neded to create dir- or file- name
-
-date                # informative
 timezone         Europe/Berlin  # needed for crontab timezone recalculation
 
-duration            # needed
-crontabString       # needed for crontab timezone recalculation
-weeks2record     1,2,3... | even | odd # optional, Every week if empty. This is a komma separted list of week numbers, odd or even
+duration            2h# needed
 
-recording type   SingleFile | PerTrac  # needed
 url2record       http://               # needed
-hompage          http://               # informative
 REC: hour=20 &  min= 0..5 & 

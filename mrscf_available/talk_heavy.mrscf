@@ -1,0 +1,9 @@
+radio station    antenne_muenster
+radio show       talk_heavy
+
+timezone         Europe/Berlin
+duration         1h
+
+url2record       http://stream.antennemuenster.de:8000/am128k.m3u
+
+REC:             hour = 20  &  min = 0..5  &  dow = tu & oodim = 4

@@ -1,0 +1,9 @@
+radio station    lohro
+radio show       Metaltoern
+
+timezone         Europe/Berlin
+duration         1h
+
+url2record       http://stream.lohro.de:8000/lohro128.mp3.m3u
+
+REC:             hour = 21  &  min = 0..5  &  dow = sun

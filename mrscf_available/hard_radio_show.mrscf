@@ -1,15 +1,9 @@
-status           new, to be recordet soon
-
 radio station    OsRadio
 radio show       HardRadioshow
 
-date             Th 20:00 in odd weeks
 timezone         Europe/Berlin
-weeks2record     odd
 duration         1h
 
-recording type   SingleFile
 url2record       http://server1.webradiostreaming.de:2814/listen.pls
-hompage          http://www.osradio.de
 
 REC: week = odd & hour = 20 & min = 0..5  & dow = thu

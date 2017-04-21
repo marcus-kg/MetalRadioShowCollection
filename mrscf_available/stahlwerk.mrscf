@@ -1,0 +1,10 @@
+radio station    Fritz  # vom RBB
+radio show       Stahlwerk
+
+timezone         Europe/Berlin
+duration         2h
+
+url2record       http://www.fritz.de/live.m3u
+
+REC:             hour = 20  &  min = 0..5  &  dow = Thu
+REC:             hour = 0   &  min = 0..5  &  dow = Fri

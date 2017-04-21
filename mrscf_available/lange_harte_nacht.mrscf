@@ -1,13 +1,8 @@
-status           god, often recordet
-
 radio station    HR3
 radio show       LangeHarteNacht
 
-date             Jan,Apr,Jul,Oct Sa 2..8 0:00
 timezone         Europe/Berlin
 duration         4h
 
-recording type   PerTrac
 url2record       http://gffstream.ic.llnwd.net/stream/gffstream_mp3_w69b
-hompage          http://hr3.de
 REC: hour = 0  &  min = 0..5  &  dow = sat  &  month = 1,4,7,10  &  dom = 2..8

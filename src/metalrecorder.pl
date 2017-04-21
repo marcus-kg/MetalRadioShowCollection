@@ -1,13 +1,13 @@
 #!/usr/bin/perl
 #use strict;            # im am unable to use strict together with getopts
 #use warnings;
+
 use Getopt::Std;
 use File::Path qw(make_path);
 use POSIX qw(tzset);           # timezoen set
 use POSIX qw(floor);
 
 my $version = "0.0.3";  # will be counted up anytime  
-my $RecordingType;      # p => one file Per trac | s => one Single File
 my $url;                # URL of the audiostream to record
 my $station;            # the name of the radio station is used to creare a directoryname 
 my $show;               # the name of the show is the second part of the directoryname
@@ -17,10 +17,8 @@ my $configfile;         # Name of the configuration file to read
 my @toExec;             # the list of programs to be executed after recording is finished
 my $mrscfDirectory;     # Directory of the collection files *.mrscf
 my $GarbageCollection;  # if set to yes in config file: in single file recording the *.cue files are deleted and in one file per trac recordings the inclomplete directory will be deleted 
-#my $recordingDirectory; # the root dir of recording here in directorys will be created for every show
-my $recDirSingleFile;
-my $recDirFielPerTrac;
-my $fileNameSingleFile;
+my $RecordingDirectory;
+my $RecordingFileName;
 my $additionalParameter;# appendet to Streamripper
 my @recLines;
 my $TimeZoneRead;       # timezone given in mrscf dile
@@ -87,18 +85,17 @@ sub readConfigFile
             $ThisSectionIsForMe = 1;
         }elsif ( $OneLine =~ m /\[[\w\-\.]+\]/ ){       # found a [SECTION] but other than mine
             $ThisSectionIsForMe = 0;
-        }elsif ( $ThisSectionIsForMe ){                 # other lines are only inresting if they are insiede my [SECTION]
+        }elsif ( $ThisSectionIsForMe ){                 # other lines are only interesting if they are inside my [SECTION]
             # directories an file Name
-            $OneLine =~ m/mrscfDirectory\s+([\w-\.\/]+)/i     and $mrscfDirectory     = $1;            
-            $OneLine =~ m/RecordingDirectoryForOneSingleFile\s+([\w-\.\/\%]+)/i and $recDirSingleFile = $1;
-            $OneLine =~ m/FileNameForOneSingleFile\s+([\w-\.\/\%]+)/i and $fileNameSingleFile = $1;
-            $OneLine =~ m/RecordingDirectoryOneFilePerTrac\s+([\w-\.\/\%]+)/i and $recDirFielPerTrac = $1;
+            $OneLine =~ m/mrscfDirectory\s+([\w-\.\/]+)/i       and $mrscfDirectory     = $1;            
+            $OneLine =~ m/RecordingDirectory\s+([\w-\.\/\%]+)/i and $RecordingDirectory = $1;
+            $OneLine =~ m/RecordingFileName\s+([\w-\.\/\%]+)/i  and $RecordingFileName  = $1;
             # GarbageCollection y[es] or n[o]
             $OneLine =~ m/GarbageCollection\s+y/i and $GarbageCollection  = 1;
             $OneLine =~ m/GarbageCollection\s+n/i and $GarbageCollection  = 0;
             # list of programs to execute after recording
             $OneLine =~ m/execAfterRecording_([0-9]+)\s+(.+$)/i and $toExec[$1] = $2;
-            # additional parameters to Streamripper
+            # additional parameters to streamripper
             $OneLine =~ m/additionalParameter\s+(.+)/i and $additionalParameter = $1;
         }
     } # end while oneLine 
@@ -108,12 +105,12 @@ sub readConfigFile
     #$recordingDirectory eq "" and die "No directory given to store the music: need a recordingDirectory entry in $cfgFileName\n"; 
 
     # print waht i understood in the config file
+	print "------ cfgFileName ------ $cfgFileName\n";
     print "ConfigFile:               |$cfgFileName|\n";
     print "CollectionFile:           |$collectionFileName|\n";
     print "mrscfDirectory:           |$mrscfDirectory|\n";
-    print "Recording into S:         |$recDirSingleFile|\n";
-    print "Name of large file:       |$fileNameSingleFile|\n";
-    print "Recording into P:         |$recDirFielPerTrac|\n";
+    print "RecordingDirectory:       |$RecordingDirectory|\n";
+    print "RecordingFileName:        |$RecordingFileName|\n";
     print "GarbageCollection:        "; ($GarbageCollection)? print "yes\n": print "no\n";
     print "additionalParameter:      |$additionalParameter|\n";    
 } # end sub readConfigFile
@@ -128,33 +125,16 @@ sub readConfigFile
 #   nothing
 ###############################################################################
 sub record{
-    if ($RecordingType eq "p"){ # one file per trac
-        if ($opt_t){            # testrun
-            print "streamripper $url -t -q -d $recDirFielPerTrac -l $duration -s $additionalParameter\n";
-        }else{                  # no testrun => do it
-            make_path($recDirFielPerTrac);
-            if (!-d "$recDirFielPerTrac") { die "could not mkdir $recDirFielPerTrac\n"; }
-
-            `streamripper $url -t -q -d $recDirFielPerTrac -l $duration -s $additionalParameter`;
-            if ($GarbageCollection){
-                `rm -r $recordingDirectory/$station-$show/$DateString/incomplete/`;
-            }
-        }
-    }elsif ($RecordingType eq "s"){ # record into one single file
-        if ($opt_t){                # testrun 
-            print "streamripper $url -t -A -q -d $recDirSingleFile -a $fileNameSingleFile -l $duration -s $additionalParameter\n";
-        }else{                      # no testrun => do it
-            make_path($recDirSingleFile);
-            if (!-d "$recDirSingleFile"){ die "could not mkdir $recDirSingleFile\n"; }
-            
-            `streamripper $url -t -A -q -d $recDirSingleFile -a $fileNameSingleFile -l $duration -s $additionalParameter`;
-            if ($GarbageCollection){
-                `rm $recordingDirectory/$station-$show/*.cue`;
-            }
-        }
-    }else{ # not p nor s => what?
-        die "dont know how to record, Singelfile s or filePertrac p\n";
-    }
+	if ($opt_t){                # testrun 
+		print "streamripper $url -t -A -q -d $RecordingDirectory -a $RecordingFileName -l $duration -s $additionalParameter\n";
+	}else{                      # no testrun => do it
+		make_path($RecordingDirectory);
+		if (!-d "$RecordingDirectory"){ die "could not mkdir $RecordingDirectory\n"; }
+		`streamripper $url -t -A -q -d $RecordingDirectory -a $RecordingFileName -l $duration -s $additionalParameter`;
+		if ($GarbageCollection){
+			`rm $RecordingDirectory/*.cue`;
+		}
+	}
 } # end sub record
 
 # FUNCTION
@@ -167,7 +147,8 @@ sub record{
 ###############################################################################
 sub readCollectionFile{
     local $OneLine;
-    open (FILE, $_[0]) or die die "can't open collection file >>$_[0]<<";
+	local $CollectionFileNameToRead = $_[0];
+    open (FILE, $CollectionFileNameToRead) or die die "can't open collection file >>$CollectionFileNameToRead<<";
     while($OneLine = <FILE>){
         #print "$OneLine";
         $OneLine =~ s/#.*//; # cut comments from >>#<< to eol
@@ -182,46 +163,35 @@ sub readCollectionFile{
         $OneLine =~ m/rec:(.+)$/i                           and  push( @recLines, $1 );
         $OneLine =~ m/timezone\s+([a-zA-Z\/_.]+)/i          and $TimeZoneRead = $1;
 
-        if ($OneLine =~ m/recording\s*type/i){
-            if ($OneLine =~ m/Single\s*File/i){
-                $RecordingType = "s";
-            } else {
-                $RecordingType = "p";
-            }
-        }
     } # end of file reading
     
-    # substitute the strings for directoriy- and file names
-    $recDirFielPerTrac  = substitute( $recDirFielPerTrac  ); 
-    $fileNameSingleFile = substitute( $fileNameSingleFile );
-    $recDirSingleFile   = substitute( $recDirSingleFile   );
+    # substitute the strings for directory- and file names
+    $RecordingFileName  = substitute( $RecordingFileName );
+    $RecordingDirectory = substitute( $RecordingDirectory   );
 
     # see if all necessary information is given
     if ( "$duration" eq "" )          { die "no duration found in $_[0]\n";      }
     if ( "$url" eq "" )               { die "no url found in $_[0]\n";           }
     if ( "$show" eq "" )              { die "no show found in $_[0]\n";          }
     if ( "$station" eq "" )           { die "no station found in $_[0]\n";       }
-    if ( "$RecordingType" eq "" )     { die "no RecordingType found in $_[0]\n"; }
     if ( scalar @recLines == 0 )      { die "no record line given in $_[0]\n";   }
     if (($TimeZoneRead ne "" ) && ( not -e "/usr/share/zoneinfo/".$TimeZoneRead )) { 
         die "unknown timezone $TimeZoneRead in $_[0] see /usr/share/zoneinfo\n";
     } 
     # tell the user what i understood, or not
-    print "RecordingType             |$RecordingType|\n";
+	print "------ readCollectionFile ------ $CollectionFileNameToRead\n";
     print "url                       |$url|\n";
     print "station                   |$station|\n";
     print "show                      |$show|\n";
     print "duration / s              |$duration|\n";
-    print "substitued:\n";
-    print "Recording into S          |$recDirSingleFile|\n";
-    print "Name of large file        |$fileNameSingleFile|\n";
-    print "Recording into P          |$recDirFielPerTrac|\n";
+    print "RecordingDirectory        |$RecordingDirectory|\n";
+    print "RecordingFileName         |$RecordingFileName|\n";
     print "Timezone                  |$TimeZoneRead|\n";
     foreach ( @recLines ){
         print "Recline                   |$_|\n";
     }
 
-    } # end sub readCollectionFile
+} # end sub readCollectionFile
 
 # FUNCTION
 #   prinit usage information and die
@@ -257,13 +227,9 @@ sub substitute{
     $_[0] =~ s/\%NameOfRadioStation/$station/ig;
     $_[0] =~ s/\%RecordingDurationIn_s/$duration/ig;
     $_[0] =~ s/\%DateString/$DateString/ig;
-    if ($RecordingType eq "p"){                      # record one file per trac
-        $_[0] =~ s/%RecordingDirectory/$recDirFielPerTrac/ig;
-        $_[0] =~ s/%RecordingFileName/various/ig;
-    } else {                                         # record one large file
-        $_[0] =~ s/%RecordingDirectory/$recDirSingleFile/ig;
-        $_[0] =~ s/%RecordingFileName/$fileNameSingleFile/ig;
-    }
+    $_[0] =~ s/%RecordingDirectory/$RecordingDirectory/ig;
+    $_[0] =~ s/%RecordingFileName/$RecordingFileName/ig;
+
     return $_[0];
 } # end sub substitute{
 
@@ -318,7 +284,7 @@ sub compActSetpoint{
         #print "\n";
     }
     elsif ( $setpoint =~ m/^([0-9]+)\.\.([0-9]+)$/) { # range e.g. 4..7
-        $retval = ( $actualval >= $1 ) && ( $actual <= $2 ); 
+        $retval = ( $actualval >= $1 ) && ( $actualval <= $2 ); 
         #print "range  |$1-$2|\n";
     }
     elsif ( $setpoint =~ m/^ODD$/ ) { # 1 3 5 7 ...
@@ -348,7 +314,7 @@ sub compActSetpoint{
 #   true if actual time in actual timestring matches
 ###############################################################################
 sub actualTimeMatches {
-    my $timeZone;          # liḱe "Europe/Berlin"
+    my $timeZone;          # like "Europe/Berlin"
     my $timeString;        # like : "min=0..5 & h=20 & Mon = odd & dayOfWeek = sun";
     my @splitedTimeString; # splited via & 
     my $startRecord = 1;    # return value
@@ -367,8 +333,9 @@ sub actualTimeMatches {
     $timeString = uc($timeString);
     $timeString =~ s/^REC://g;
     $timeString =~ s/\s//g;
-    
+
     $timeString =~ s/\bMONDAY\b/1/g;
+    #$timeString =~ s/\bMON\b/1/g; confusion with month mon
     $timeString =~ s/\bMO\b/1/g;
     $timeString =~ s/\bTUESDAY\b/2/g;
     $timeString =~ s/\bTUE\b/2/g;
@@ -431,12 +398,12 @@ sub actualTimeMatches {
     $mon  = $mon + 1;   # 1..12 not 0..11
     $week = `date +%W` + 1;
     $yday = $yday + 1;
-    
+
     if ($opt_t) {
         print "$year-$mon-$mday $hour:$min:$sec week=$week  wday=$wday  yday=$yday   idst=$isdst \n";
     }
 
-    @splitedTimeString = split('&', $timeString);       
+    @splitedTimeString = split('&', $timeString);
     foreach( @splitedTimeString ) {
         # print "timestring term |$_|\n";
         if ( $_ =~ m/^MIN=(.+)/ ) { 
@@ -463,8 +430,9 @@ sub actualTimeMatches {
         elsif ( $_ =~ m/^Y=(.+)/ ) { 
             if ( not compActSetpoint( $year, $1 ) ){ $startRecord = 0; }
         }
-        elsif ( $_ =~ m/^OODIM=(.+)/ ) { 
-            if ( not compActSetpoint( (floor($mday-1)/7)+1, $1 ) ){ $startRecord = 0; }
+        elsif ( $_ =~ m/^OODIM=(.+)/ ) {
+            my $oodim = (floor(($mday-1)/7)+1);
+            if ( not compActSetpoint( $oodim, $1 ) ){ $startRecord = 0; }
         }
         else
         {
